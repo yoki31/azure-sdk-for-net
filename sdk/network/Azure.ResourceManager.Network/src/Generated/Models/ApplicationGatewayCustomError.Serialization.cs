@@ -5,6 +5,7 @@
 
 #nullable disable
 
+using System;
 using System.Text.Json;
 using Azure.Core;
 
@@ -17,13 +18,13 @@ namespace Azure.ResourceManager.Network.Models
             writer.WriteStartObject();
             if (Optional.IsDefined(StatusCode))
             {
-                writer.WritePropertyName("statusCode");
+                writer.WritePropertyName("statusCode"u8);
                 writer.WriteStringValue(StatusCode.Value.ToString());
             }
-            if (Optional.IsDefined(CustomErrorPageUrl))
+            if (Optional.IsDefined(CustomErrorPageUri))
             {
-                writer.WritePropertyName("customErrorPageUrl");
-                writer.WriteStringValue(CustomErrorPageUrl);
+                writer.WritePropertyName("customErrorPageUrl"u8);
+                writer.WriteStringValue(CustomErrorPageUri.AbsoluteUri);
             }
             writer.WriteEndObject();
         }
@@ -31,10 +32,10 @@ namespace Azure.ResourceManager.Network.Models
         internal static ApplicationGatewayCustomError DeserializeApplicationGatewayCustomError(JsonElement element)
         {
             Optional<ApplicationGatewayCustomErrorStatusCode> statusCode = default;
-            Optional<string> customErrorPageUrl = default;
+            Optional<Uri> customErrorPageUrl = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("statusCode"))
+                if (property.NameEquals("statusCode"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -44,9 +45,14 @@ namespace Azure.ResourceManager.Network.Models
                     statusCode = new ApplicationGatewayCustomErrorStatusCode(property.Value.GetString());
                     continue;
                 }
-                if (property.NameEquals("customErrorPageUrl"))
+                if (property.NameEquals("customErrorPageUrl"u8))
                 {
-                    customErrorPageUrl = property.Value.GetString();
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        customErrorPageUrl = null;
+                        continue;
+                    }
+                    customErrorPageUrl = new Uri(property.Value.GetString());
                     continue;
                 }
             }

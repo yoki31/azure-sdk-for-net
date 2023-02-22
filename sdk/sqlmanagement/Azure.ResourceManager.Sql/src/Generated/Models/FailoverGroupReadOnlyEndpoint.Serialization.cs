@@ -10,14 +10,14 @@ using Azure.Core;
 
 namespace Azure.ResourceManager.Sql.Models
 {
-    public partial class FailoverGroupReadOnlyEndpoint : IUtf8JsonSerializable
+    internal partial class FailoverGroupReadOnlyEndpoint : IUtf8JsonSerializable
     {
         void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
             if (Optional.IsDefined(FailoverPolicy))
             {
-                writer.WritePropertyName("failoverPolicy");
+                writer.WritePropertyName("failoverPolicy"u8);
                 writer.WriteStringValue(FailoverPolicy.Value.ToString());
             }
             writer.WriteEndObject();
@@ -28,7 +28,7 @@ namespace Azure.ResourceManager.Sql.Models
             Optional<ReadOnlyEndpointFailoverPolicy> failoverPolicy = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("failoverPolicy"))
+                if (property.NameEquals("failoverPolicy"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {

@@ -27,8 +27,7 @@ namespace Azure.Identity
 
         public virtual async ValueTask<AccessToken> AuthenticateAsync(bool async, TokenRequestContext context, CancellationToken cancellationToken)
         {
-            using Request request = CreateRequest(context.Scopes);
-            using HttpMessage message = CreateHttpMessage(request);
+            using HttpMessage message = CreateHttpMessage(CreateRequest(context.Scopes));
             if (async)
             {
                 await Pipeline.HttpPipeline.SendAsync(message, cancellationToken).ConfigureAwait(false);
@@ -61,15 +60,20 @@ namespace Azure.Identity
 
                 message = GetMessageFromResponse(json.RootElement);
             }
+            catch (JsonException jex)
+            {
+                throw new CredentialUnavailableException(UnexpectedResponse, jex);
+            }
             catch (Exception e)
             {
                 exception = e;
                 message = UnexpectedResponse;
             }
 
+            var responseError = new ResponseError(null, message);
             throw async
-                ? await Pipeline.Diagnostics.CreateRequestFailedExceptionAsync(response, message, innerException: exception).ConfigureAwait(false)
-                : Pipeline.Diagnostics.CreateRequestFailedException(response, message, innerException: exception);
+                ? await Pipeline.Diagnostics.CreateRequestFailedExceptionAsync(response, responseError, innerException: exception).ConfigureAwait(false)
+                : Pipeline.Diagnostics.CreateRequestFailedException(response, responseError, innerException: exception);
         }
 
         protected abstract Request CreateRequest(string[] scopes);

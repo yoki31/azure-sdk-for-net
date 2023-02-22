@@ -1,6 +1,6 @@
 # Azure client library integration for ASP.NET Core
 
-Microsoft.Extensions.Azure.Core provides shared primitives to integrate Azure clients with ASP.NET Core [dependency injection][dependency_injection] and [configuration][configuration] systems.
+Microsoft.Extensions.Azure provides shared primitives to integrate Azure clients with ASP.NET Core [dependency injection][dependency_injection] and [configuration][configuration] systems.
 
 [Source code][source_root] | [Package (NuGet)][package]
 
@@ -48,7 +48,7 @@ public void ConfigureServices(IServiceCollection services)
         builder.ConfigureDefaults(options => options.Retry.Mode = RetryMode.Exponential);
 
         // Advanced configure global defaults
-        builder.ConfigureDefaults((options, provider) =>  options.AddPolicy(provider.GetService<DependencyInjectionEnabledPolicy>(), HttpPipelinePosition.PerCall));
+        builder.ConfigureDefaults((options, provider) => options.AddPolicy(provider.GetService<DependencyInjectionEnabledPolicy>(), HttpPipelinePosition.PerCall));
 
         // Register blob service client and initialize it using the Storage section of configuration
         builder.AddBlobServiceClient(Configuration.GetSection("Storage"))

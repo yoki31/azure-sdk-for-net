@@ -8,6 +8,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using Azure.Core;
+using Azure.ResourceManager.Resources.Models;
 
 namespace Azure.ResourceManager.Sql.Models
 {
@@ -15,26 +16,26 @@ namespace Azure.ResourceManager.Sql.Models
     {
         internal static SyncDatabaseIdListResult DeserializeSyncDatabaseIdListResult(JsonElement element)
         {
-            Optional<IReadOnlyList<SyncDatabaseIdProperties>> value = default;
+            Optional<IReadOnlyList<SubResource>> value = default;
             Optional<string> nextLink = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("value"))
+                if (property.NameEquals("value"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    List<SyncDatabaseIdProperties> array = new List<SyncDatabaseIdProperties>();
+                    List<SubResource> array = new List<SubResource>();
                     foreach (var item in property.Value.EnumerateArray())
                     {
-                        array.Add(SyncDatabaseIdProperties.DeserializeSyncDatabaseIdProperties(item));
+                        array.Add(JsonSerializer.Deserialize<SubResource>(item.GetRawText()));
                     }
                     value = array;
                     continue;
                 }
-                if (property.NameEquals("nextLink"))
+                if (property.NameEquals("nextLink"u8))
                 {
                     nextLink = property.Value.GetString();
                     continue;

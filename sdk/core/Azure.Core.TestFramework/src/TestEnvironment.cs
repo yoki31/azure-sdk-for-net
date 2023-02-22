@@ -28,6 +28,10 @@ namespace Azure.Core.TestFramework
         [EditorBrowsableAttribute(EditorBrowsableState.Never)]
         public static string RepositoryRoot { get; }
 
+        public static string DevCertPath { get; }
+
+        public const string DevCertPassword = "password";
+
         private static readonly Dictionary<Type, Task> s_environmentStateCache = new();
 
         private readonly string _prefix;
@@ -122,6 +126,13 @@ namespace Azure.Core.TestFramework
             }
 
             RepositoryRoot = directoryInfo?.Parent?.FullName;
+
+            DevCertPath = Path.Combine(
+                RepositoryRoot,
+                "eng",
+                "common",
+                "testproxy",
+                "dotnet-devcert.pfx");
         }
 
         public RecordedTestMode? Mode { get; set; }
@@ -202,7 +213,7 @@ namespace Azure.Core.TestFramework
                         GetVariable("CLIENT_SECRET"),
                         new ClientSecretCredentialOptions()
                         {
-                             AuthorityHost = new Uri(GetVariable("AZURE_AUTHORITY_HOST"))
+                             AuthorityHost = new Uri(AuthorityHostUrl)
                         }
                     );
                 }
@@ -298,7 +309,7 @@ namespace Azure.Core.TestFramework
             string clientSecret = GetOptionalVariable("CLIENT_SECRET");
             string authorityHost = GetOptionalVariable("AZURE_AUTHORITY_HOST");
 
-            if (tenantId == null || clientId == null || clientSecret == null || authorityHost == null)
+            if (tenantId == null || clientId == null || clientSecret == null || authorityHost == null || ResourceManagerUrl == null)
             {
                 return;
             }
@@ -323,9 +334,10 @@ namespace Azure.Core.TestFramework
             // send the GET request
             Response response = await pipeline.SendRequestAsync(request, CancellationToken.None);
 
-            // resource group not found - nothing we can do here
-            if (response.Status == 404)
+            // resource group not valid - prompt to create new resources
+            if (response.Status is 403 or 404)
             {
+                BootStrapTestResources();
                 return;
             }
 
@@ -618,6 +630,22 @@ namespace Azure.Core.TestFramework
                 bool.TryParse(switchString, out bool disableAutoRecording);
 
                 return disableAutoRecording || GlobalIsRunningInCI;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether to enable the test framework to proxy traffic through fiddler.
+        /// </summary>
+        internal static bool EnableFiddler
+        {
+            get
+            {
+                string switchString = TestContext.Parameters["EnableFiddler"] ??
+                                      Environment.GetEnvironmentVariable("AZURE_ENABLE_FIDDLER");
+
+                bool.TryParse(switchString, out bool enableFiddler);
+
+                return enableFiddler;
             }
         }
 

@@ -10,14 +10,14 @@ using Azure.Core;
 
 namespace Azure.ResourceManager.Compute.Models
 {
-    public partial class DisallowedConfiguration : IUtf8JsonSerializable
+    internal partial class DisallowedConfiguration : IUtf8JsonSerializable
     {
         void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
             if (Optional.IsDefined(VmDiskType))
             {
-                writer.WritePropertyName("vmDiskType");
+                writer.WritePropertyName("vmDiskType"u8);
                 writer.WriteStringValue(VmDiskType.Value.ToString());
             }
             writer.WriteEndObject();
@@ -25,17 +25,17 @@ namespace Azure.ResourceManager.Compute.Models
 
         internal static DisallowedConfiguration DeserializeDisallowedConfiguration(JsonElement element)
         {
-            Optional<VmDiskTypes> vmDiskType = default;
+            Optional<VirtualMachineDiskType> vmDiskType = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("vmDiskType"))
+                if (property.NameEquals("vmDiskType"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    vmDiskType = new VmDiskTypes(property.Value.GetString());
+                    vmDiskType = new VirtualMachineDiskType(property.Value.GetString());
                     continue;
                 }
             }

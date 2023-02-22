@@ -1,19 +1,16 @@
 {
   "Entries": [
     {
-      "RequestUri": "https://nibhatianomalydetector-anomalydetector.cognitiveservices.azure.com/anomalydetector/v1.1-preview/timeseries/last/detect",
+      "RequestUri": "https://multi-ad-test-uscx-3.cognitiveservices.azure.com/anomalydetector/v1.1/timeseries/last/detect",
       "RequestMethod": "POST",
       "RequestHeaders": {
         "Accept": "application/json",
         "Content-Length": "2813",
         "Content-Type": "application/json",
         "Ocp-Apim-Subscription-Key": "Sanitized",
-        "traceparent": "00-2389bd888956d34cbb0f2b685aeeda72-04ced3e25d807f47-00",
-        "User-Agent": [
-          "azsdk-net-AI.AnomalyDetector/3.0.0-alpha.20210818.1",
-          "(.NET 5.0.9; Microsoft Windows 10.0.19043)"
-        ],
-        "x-ms-client-request-id": "0930d3aa5096fd386be1737855ec3c6b",
+        "traceparent": "00-ac5db855bfe28e4baaaf04946d1d9966-10b528f47823f14f-00",
+        "User-Agent": "azsdk-net-AI.AnomalyDetector/3.0.0-alpha.20221128.1 (.NET Core 3.1.31; Microsoft Windows 10.0.22621)",
+        "x-ms-client-request-id": "1dcfbb6c16ecd63342364e2a52ebf6c4",
         "x-ms-return-client-request-id": "true"
       },
       "RequestBody": {
@@ -217,24 +214,33 @@
       },
       "StatusCode": 200,
       "ResponseHeaders": {
-        "apim-request-id": "2840587d-0202-443e-b0b2-455dd5552881",
-        "Content-Length": "203",
+        "apim-request-id": "b392ef02-988f-4900-9caf-2d52bf8207a5",
+        "Content-Length": "232",
         "Content-Type": "application/json",
         "csp-billing-usage": "CognitiveServices.AnomalyDetector.DataPoints=1",
-        "Date": "Wed, 18 Aug 2021 17:53:55 GMT",
+        "Date": "Mon, 28 Nov 2022 03:04:52 GMT",
         "model-id": "10",
         "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
         "X-Content-Type-Options": "nosniff",
-        "x-envoy-upstream-service-time": "31"
+        "x-envoy-upstream-service-time": "37",
+        "x-ms-region": "Central US EUAP"
       },
-      "ResponseBody": [
-        "{\u0022expectedValue\u0022:809.5658016931228,\u0022isAnomaly\u0022:false,\u0022isNegativeAnomaly\u0022:false,\u0022isPositiveAnomaly\u0022:false,\u0022lowerMargin\u0022:40.47829008465612,\u0022period\u0022:12,\u0022suggestedWindow\u0022:49,\u0022upperMargin\u0022:40.47829008465612}\n"
-      ]
+      "ResponseBody": {
+        "expectedValue": 809.5658016931228,
+        "isAnomaly": true,
+        "isNegativeAnomaly": false,
+        "isPositiveAnomaly": true,
+        "lowerMargin": 6.849605769696372,
+        "period": 12,
+        "severity": 0.06855012497023368,
+        "suggestedWindow": 49,
+        "upperMargin": 6.849605769696372
+      }
     }
   ],
   "Variables": {
     "ANOMALY_DETECTOR_API_KEY": "Sanitized",
-    "ANOMALY_DETECTOR_ENDPOINT": "https://nibhatianomalydetector-anomalydetector.cognitiveservices.azure.com",
-    "RandomSeed": "223311829"
+    "ANOMALY_DETECTOR_ENDPOINT": "https://multi-ad-test-uscx-3.cognitiveservices.azure.com/",
+    "RandomSeed": "1952604821"
   }
 }

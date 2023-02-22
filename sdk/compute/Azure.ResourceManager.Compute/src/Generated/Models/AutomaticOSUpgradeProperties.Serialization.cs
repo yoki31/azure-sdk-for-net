@@ -10,12 +10,12 @@ using Azure.Core;
 
 namespace Azure.ResourceManager.Compute.Models
 {
-    public partial class AutomaticOSUpgradeProperties : IUtf8JsonSerializable
+    internal partial class AutomaticOSUpgradeProperties : IUtf8JsonSerializable
     {
         void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
-            writer.WritePropertyName("automaticOSUpgradeSupported");
+            writer.WritePropertyName("automaticOSUpgradeSupported"u8);
             writer.WriteBooleanValue(AutomaticOSUpgradeSupported);
             writer.WriteEndObject();
         }
@@ -25,7 +25,7 @@ namespace Azure.ResourceManager.Compute.Models
             bool automaticOSUpgradeSupported = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("automaticOSUpgradeSupported"))
+                if (property.NameEquals("automaticOSUpgradeSupported"u8))
                 {
                     automaticOSUpgradeSupported = property.Value.GetBoolean();
                     continue;

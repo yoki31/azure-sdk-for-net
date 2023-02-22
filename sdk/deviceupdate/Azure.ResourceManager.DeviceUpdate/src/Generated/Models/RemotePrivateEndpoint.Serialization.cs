@@ -18,12 +18,32 @@ namespace Azure.ResourceManager.DeviceUpdate.Models
             writer.WriteStartObject();
             if (Optional.IsDefined(Id))
             {
-                writer.WritePropertyName("id");
+                writer.WritePropertyName("id"u8);
                 writer.WriteStringValue(Id);
+            }
+            if (Optional.IsDefined(Location))
+            {
+                writer.WritePropertyName("location"u8);
+                writer.WriteStringValue(Location.Value);
+            }
+            if (Optional.IsDefined(ImmutableSubscriptionId))
+            {
+                writer.WritePropertyName("immutableSubscriptionId"u8);
+                writer.WriteStringValue(ImmutableSubscriptionId);
+            }
+            if (Optional.IsDefined(ImmutableResourceId))
+            {
+                writer.WritePropertyName("immutableResourceId"u8);
+                writer.WriteStringValue(ImmutableResourceId);
+            }
+            if (Optional.IsDefined(VnetTrafficTag))
+            {
+                writer.WritePropertyName("vnetTrafficTag"u8);
+                writer.WriteStringValue(VnetTrafficTag);
             }
             if (Optional.IsCollectionDefined(ManualPrivateLinkServiceConnections))
             {
-                writer.WritePropertyName("manualPrivateLinkServiceConnections");
+                writer.WritePropertyName("manualPrivateLinkServiceConnections"u8);
                 writer.WriteStartArray();
                 foreach (var item in ManualPrivateLinkServiceConnections)
                 {
@@ -33,7 +53,7 @@ namespace Azure.ResourceManager.DeviceUpdate.Models
             }
             if (Optional.IsCollectionDefined(PrivateLinkServiceConnections))
             {
-                writer.WritePropertyName("privateLinkServiceConnections");
+                writer.WritePropertyName("privateLinkServiceConnections"u8);
                 writer.WriteStartArray();
                 foreach (var item in PrivateLinkServiceConnections)
                 {
@@ -43,7 +63,7 @@ namespace Azure.ResourceManager.DeviceUpdate.Models
             }
             if (Optional.IsCollectionDefined(PrivateLinkServiceProxies))
             {
-                writer.WritePropertyName("privateLinkServiceProxies");
+                writer.WritePropertyName("privateLinkServiceProxies"u8);
                 writer.WriteStartArray();
                 foreach (var item in PrivateLinkServiceProxies)
                 {
@@ -53,7 +73,7 @@ namespace Azure.ResourceManager.DeviceUpdate.Models
             }
             if (Optional.IsCollectionDefined(ConnectionDetails))
             {
-                writer.WritePropertyName("connectionDetails");
+                writer.WritePropertyName("connectionDetails"u8);
                 writer.WriteStartArray();
                 foreach (var item in ConnectionDetails)
                 {
@@ -67,6 +87,9 @@ namespace Azure.ResourceManager.DeviceUpdate.Models
         internal static RemotePrivateEndpoint DeserializeRemotePrivateEndpoint(JsonElement element)
         {
             Optional<string> id = default;
+            Optional<AzureLocation> location = default;
+            Optional<string> immutableSubscriptionId = default;
+            Optional<string> immutableResourceId = default;
             Optional<string> vnetTrafficTag = default;
             Optional<IList<PrivateLinkServiceConnection>> manualPrivateLinkServiceConnections = default;
             Optional<IList<PrivateLinkServiceConnection>> privateLinkServiceConnections = default;
@@ -74,17 +97,37 @@ namespace Azure.ResourceManager.DeviceUpdate.Models
             Optional<IList<ConnectionDetails>> connectionDetails = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("id"))
+                if (property.NameEquals("id"u8))
                 {
                     id = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("vnetTrafficTag"))
+                if (property.NameEquals("location"u8))
+                {
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        property.ThrowNonNullablePropertyIsNull();
+                        continue;
+                    }
+                    location = new AzureLocation(property.Value.GetString());
+                    continue;
+                }
+                if (property.NameEquals("immutableSubscriptionId"u8))
+                {
+                    immutableSubscriptionId = property.Value.GetString();
+                    continue;
+                }
+                if (property.NameEquals("immutableResourceId"u8))
+                {
+                    immutableResourceId = property.Value.GetString();
+                    continue;
+                }
+                if (property.NameEquals("vnetTrafficTag"u8))
                 {
                     vnetTrafficTag = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("manualPrivateLinkServiceConnections"))
+                if (property.NameEquals("manualPrivateLinkServiceConnections"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -99,7 +142,7 @@ namespace Azure.ResourceManager.DeviceUpdate.Models
                     manualPrivateLinkServiceConnections = array;
                     continue;
                 }
-                if (property.NameEquals("privateLinkServiceConnections"))
+                if (property.NameEquals("privateLinkServiceConnections"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -114,7 +157,7 @@ namespace Azure.ResourceManager.DeviceUpdate.Models
                     privateLinkServiceConnections = array;
                     continue;
                 }
-                if (property.NameEquals("privateLinkServiceProxies"))
+                if (property.NameEquals("privateLinkServiceProxies"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -129,7 +172,7 @@ namespace Azure.ResourceManager.DeviceUpdate.Models
                     privateLinkServiceProxies = array;
                     continue;
                 }
-                if (property.NameEquals("connectionDetails"))
+                if (property.NameEquals("connectionDetails"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -145,7 +188,7 @@ namespace Azure.ResourceManager.DeviceUpdate.Models
                     continue;
                 }
             }
-            return new RemotePrivateEndpoint(id.Value, vnetTrafficTag.Value, Optional.ToList(manualPrivateLinkServiceConnections), Optional.ToList(privateLinkServiceConnections), Optional.ToList(privateLinkServiceProxies), Optional.ToList(connectionDetails));
+            return new RemotePrivateEndpoint(id.Value, Optional.ToNullable(location), immutableSubscriptionId.Value, immutableResourceId.Value, vnetTrafficTag.Value, Optional.ToList(manualPrivateLinkServiceConnections), Optional.ToList(privateLinkServiceConnections), Optional.ToList(privateLinkServiceProxies), Optional.ToList(connectionDetails));
         }
     }
 }

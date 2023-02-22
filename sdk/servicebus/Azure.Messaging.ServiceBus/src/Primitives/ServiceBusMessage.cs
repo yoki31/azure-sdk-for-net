@@ -9,6 +9,7 @@ using System.Text;
 using Azure.Core;
 using Azure.Core.Amqp;
 using Azure.Messaging.ServiceBus.Amqp;
+using Azure.Messaging.ServiceBus.Diagnostics;
 
 namespace Azure.Messaging.ServiceBus
 {
@@ -20,7 +21,7 @@ namespace Azure.Messaging.ServiceBus
     /// The message structure is discussed in detail in the
     /// <see href="https://docs.microsoft.com/azure/service-bus-messaging/service-bus-messages-payloads">product documentation</see>.
     /// </remarks>
-    public class ServiceBusMessage : MessageWithMetadata
+    public class ServiceBusMessage
     {
         /// <summary>
         /// Creates a new message.
@@ -159,17 +160,6 @@ namespace Azure.Messaging.ServiceBus
         }
 
         /// <summary>
-        /// Hidden property that shadows the <see cref="Body"/> property. This is added
-        /// in order to inherit from <see cref="MessageWithMetadata"/>.
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public override BinaryData Data
-        {
-            get => Body;
-            set => Body = value;
-        }
-
-        /// <summary>
         /// Gets or sets the MessageId to identify the message.
         /// </summary>
         /// <remarks>
@@ -254,11 +244,14 @@ namespace Azure.Messaging.ServiceBus
             set
             {
                 Argument.AssertNotTooLong(value, Constants.MaxSessionIdLength, nameof(value));
+                AmqpMessage.Properties.GroupId = value;
+
+                // If the PartitionKey was already set to a different value, override it with the SessionId, as the SessionId takes precedence.
                 if (PartitionKey != null && PartitionKey != value)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), $"SessionId:{value} cannot be set to a different value than PartitionKey:{PartitionKey}.");
+                    ServiceBusEventSource.Log.PartitionKeyOverwritten(PartitionKey, value, MessageId);
+                    PartitionKey = value;
                 }
-                AmqpMessage.Properties.GroupId = value;
             }
         }
 
@@ -361,7 +354,7 @@ namespace Azure.Messaging.ServiceBus
         /// Optionally describes the payload of the message, with a descriptor following the format of
         /// RFC2045, Section 5, for example "application/json".
         /// </remarks>
-        public override string ContentType
+        public string ContentType
         {
             get
             {
@@ -372,13 +365,6 @@ namespace Azure.Messaging.ServiceBus
                 AmqpMessage.Properties.ContentType = value;
             }
         }
-
-        /// <summary>
-        /// Hidden property that indicates that the <see cref="ServiceBusMessage"/> is not read-only. This is part of
-        /// the <see cref="MessageWithMetadata"/> abstraction.
-        /// </summary>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public override bool IsReadOnly => false;
 
         /// <summary>Gets or sets the address of an entity to send replies to.</summary>
         /// <value>The reply entity address.</value>
@@ -440,10 +426,33 @@ namespace Azure.Messaging.ServiceBus
         /// Gets the application properties bag, which can be used for custom message metadata.
         /// </summary>
         /// <remarks>
-        /// Only following value types are supported:
-        /// byte, sbyte, char, short, ushort, int, uint, long, ulong, float, double, decimal,
-        /// bool, Guid, string, Uri, DateTime, DateTimeOffset, TimeSpan
+        ///   <list type="bullet">
+        ///     <listheader><description>The following types are supported:</description></listheader>
+        ///     <item><description>string</description></item>
+        ///     <item><description>bool</description></item>
+        ///     <item><description>byte</description></item>
+        ///     <item><description>sbyte</description></item>
+        ///     <item><description>short</description></item>
+        ///     <item><description>ushort</description></item>
+        ///     <item><description>int</description></item>
+        ///     <item><description>uint</description></item>
+        ///     <item><description>long</description></item>
+        ///     <item><description>ulong</description></item>
+        ///     <item><description>float</description></item>
+        ///     <item><description>decimal</description></item>
+        ///     <item><description>double</description></item>
+        ///     <item><description>char</description></item>
+        ///     <item><description>Guid</description></item>
+        ///     <item><description>DateTime</description></item>
+        ///     <item><description>DateTimeOffset</description></item>
+        ///     <item><description>Stream</description></item>
+        ///     <item><description>Uri</description></item>
+        ///     <item><description>TimeSpan</description></item>
+        ///   </list>
         /// </remarks>
+        /// <exception cref="System.Runtime.Serialization.SerializationException">
+        ///   Occurs when the <see cref="ServiceBusMessage" /> is serialized for transport when an unsupported type is used as a property.
+        /// </exception>
         public IDictionary<string, object> ApplicationProperties
         {
             get

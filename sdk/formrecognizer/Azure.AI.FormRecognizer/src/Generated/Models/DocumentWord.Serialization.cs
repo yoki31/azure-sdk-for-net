@@ -16,17 +16,17 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
         internal static DocumentWord DeserializeDocumentWord(JsonElement element)
         {
             string content = default;
-            Optional<IReadOnlyList<float>> boundingBox = default;
+            Optional<IReadOnlyList<float>> polygon = default;
             DocumentSpan span = default;
             float confidence = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("content"))
+                if (property.NameEquals("content"u8))
                 {
                     content = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("boundingBox"))
+                if (property.NameEquals("polygon"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -38,21 +38,21 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                     {
                         array.Add(item.GetSingle());
                     }
-                    boundingBox = array;
+                    polygon = array;
                     continue;
                 }
-                if (property.NameEquals("span"))
+                if (property.NameEquals("span"u8))
                 {
                     span = DocumentSpan.DeserializeDocumentSpan(property.Value);
                     continue;
                 }
-                if (property.NameEquals("confidence"))
+                if (property.NameEquals("confidence"u8))
                 {
                     confidence = property.Value.GetSingle();
                     continue;
                 }
             }
-            return new DocumentWord(content, Optional.ToList(boundingBox), span, confidence);
+            return new DocumentWord(content, Optional.ToList(polygon), span, confidence);
         }
     }
 }

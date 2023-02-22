@@ -54,6 +54,7 @@ namespace Azure.Analytics.Synapse.ManagedPrivateEndpoints
         /// <param name="pipeline"> The HTTP pipeline for sending and receiving REST requests and responses. </param>
         /// <param name="endpoint"> The workspace development endpoint, for example https://myworkspace.dev.azuresynapse.net. </param>
         /// <param name="apiVersion"> Api Version. </param>
+        /// <exception cref="ArgumentNullException"> <paramref name="clientDiagnostics"/>, <paramref name="pipeline"/>, <paramref name="endpoint"/> or <paramref name="apiVersion"/> is null. </exception>
         internal ManagedPrivateEndpointsClient(ClientDiagnostics clientDiagnostics, HttpPipeline pipeline, Uri endpoint, string apiVersion = "2020-12-01")
         {
             RestClient = new ManagedPrivateEndpointsRestClient(clientDiagnostics, pipeline, endpoint, apiVersion);
@@ -183,42 +184,11 @@ namespace Azure.Analytics.Synapse.ManagedPrivateEndpoints
         /// <exception cref="ArgumentNullException"> <paramref name="managedVirtualNetworkName"/> is null. </exception>
         public virtual AsyncPageable<ManagedPrivateEndpoint> ListAsync(string managedVirtualNetworkName = "default", CancellationToken cancellationToken = default)
         {
-            if (managedVirtualNetworkName == null)
-            {
-                throw new ArgumentNullException(nameof(managedVirtualNetworkName));
-            }
+            Argument.AssertNotNullOrEmpty(managedVirtualNetworkName, nameof(managedVirtualNetworkName));
 
-            async Task<Page<ManagedPrivateEndpoint>> FirstPageFunc(int? pageSizeHint)
-            {
-                using var scope = _clientDiagnostics.CreateScope("ManagedPrivateEndpointsClient.List");
-                scope.Start();
-                try
-                {
-                    var response = await RestClient.ListAsync(managedVirtualNetworkName, cancellationToken).ConfigureAwait(false);
-                    return Page.FromValues(response.Value.Value, response.Value.NextLink, response.GetRawResponse());
-                }
-                catch (Exception e)
-                {
-                    scope.Failed(e);
-                    throw;
-                }
-            }
-            async Task<Page<ManagedPrivateEndpoint>> NextPageFunc(string nextLink, int? pageSizeHint)
-            {
-                using var scope = _clientDiagnostics.CreateScope("ManagedPrivateEndpointsClient.List");
-                scope.Start();
-                try
-                {
-                    var response = await RestClient.ListNextPageAsync(nextLink, managedVirtualNetworkName, cancellationToken).ConfigureAwait(false);
-                    return Page.FromValues(response.Value.Value, response.Value.NextLink, response.GetRawResponse());
-                }
-                catch (Exception e)
-                {
-                    scope.Failed(e);
-                    throw;
-                }
-            }
-            return PageableHelpers.CreateAsyncEnumerable(FirstPageFunc, NextPageFunc);
+            HttpMessage FirstPageRequest(int? pageSizeHint) => RestClient.CreateListRequest(managedVirtualNetworkName);
+            HttpMessage NextPageRequest(int? pageSizeHint, string nextLink) => RestClient.CreateListNextPageRequest(nextLink, managedVirtualNetworkName);
+            return PageableHelpers.CreateAsyncPageable(FirstPageRequest, NextPageRequest, ManagedPrivateEndpoint.DeserializeManagedPrivateEndpoint, _clientDiagnostics, _pipeline, "ManagedPrivateEndpointsClient.List", "value", "nextLink", cancellationToken);
         }
 
         /// <summary> List Managed Private Endpoints. </summary>
@@ -227,42 +197,11 @@ namespace Azure.Analytics.Synapse.ManagedPrivateEndpoints
         /// <exception cref="ArgumentNullException"> <paramref name="managedVirtualNetworkName"/> is null. </exception>
         public virtual Pageable<ManagedPrivateEndpoint> List(string managedVirtualNetworkName = "default", CancellationToken cancellationToken = default)
         {
-            if (managedVirtualNetworkName == null)
-            {
-                throw new ArgumentNullException(nameof(managedVirtualNetworkName));
-            }
+            Argument.AssertNotNullOrEmpty(managedVirtualNetworkName, nameof(managedVirtualNetworkName));
 
-            Page<ManagedPrivateEndpoint> FirstPageFunc(int? pageSizeHint)
-            {
-                using var scope = _clientDiagnostics.CreateScope("ManagedPrivateEndpointsClient.List");
-                scope.Start();
-                try
-                {
-                    var response = RestClient.List(managedVirtualNetworkName, cancellationToken);
-                    return Page.FromValues(response.Value.Value, response.Value.NextLink, response.GetRawResponse());
-                }
-                catch (Exception e)
-                {
-                    scope.Failed(e);
-                    throw;
-                }
-            }
-            Page<ManagedPrivateEndpoint> NextPageFunc(string nextLink, int? pageSizeHint)
-            {
-                using var scope = _clientDiagnostics.CreateScope("ManagedPrivateEndpointsClient.List");
-                scope.Start();
-                try
-                {
-                    var response = RestClient.ListNextPage(nextLink, managedVirtualNetworkName, cancellationToken);
-                    return Page.FromValues(response.Value.Value, response.Value.NextLink, response.GetRawResponse());
-                }
-                catch (Exception e)
-                {
-                    scope.Failed(e);
-                    throw;
-                }
-            }
-            return PageableHelpers.CreateEnumerable(FirstPageFunc, NextPageFunc);
+            HttpMessage FirstPageRequest(int? pageSizeHint) => RestClient.CreateListRequest(managedVirtualNetworkName);
+            HttpMessage NextPageRequest(int? pageSizeHint, string nextLink) => RestClient.CreateListNextPageRequest(nextLink, managedVirtualNetworkName);
+            return PageableHelpers.CreatePageable(FirstPageRequest, NextPageRequest, ManagedPrivateEndpoint.DeserializeManagedPrivateEndpoint, _clientDiagnostics, _pipeline, "ManagedPrivateEndpointsClient.List", "value", "nextLink", cancellationToken);
         }
     }
 }

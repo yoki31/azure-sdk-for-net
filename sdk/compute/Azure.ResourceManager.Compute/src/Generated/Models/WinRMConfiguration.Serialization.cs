@@ -11,14 +11,14 @@ using Azure.Core;
 
 namespace Azure.ResourceManager.Compute.Models
 {
-    public partial class WinRMConfiguration : IUtf8JsonSerializable
+    internal partial class WinRMConfiguration : IUtf8JsonSerializable
     {
         void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
             if (Optional.IsCollectionDefined(Listeners))
             {
-                writer.WritePropertyName("listeners");
+                writer.WritePropertyName("listeners"u8);
                 writer.WriteStartArray();
                 foreach (var item in Listeners)
                 {
@@ -34,7 +34,7 @@ namespace Azure.ResourceManager.Compute.Models
             Optional<IList<WinRMListener>> listeners = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("listeners"))
+                if (property.NameEquals("listeners"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {

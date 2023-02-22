@@ -8,6 +8,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using Azure.Core;
+using Azure.ResourceManager.EventHubs;
 
 namespace Azure.ResourceManager.EventHubs.Models
 {
@@ -15,26 +16,26 @@ namespace Azure.ResourceManager.EventHubs.Models
     {
         internal static ClusterListResult DeserializeClusterListResult(JsonElement element)
         {
-            Optional<IReadOnlyList<Cluster>> value = default;
+            Optional<IReadOnlyList<EventHubsClusterData>> value = default;
             Optional<string> nextLink = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("value"))
+                if (property.NameEquals("value"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    List<Cluster> array = new List<Cluster>();
+                    List<EventHubsClusterData> array = new List<EventHubsClusterData>();
                     foreach (var item in property.Value.EnumerateArray())
                     {
-                        array.Add(Cluster.DeserializeCluster(item));
+                        array.Add(EventHubsClusterData.DeserializeEventHubsClusterData(item));
                     }
                     value = array;
                     continue;
                 }
-                if (property.NameEquals("nextLink"))
+                if (property.NameEquals("nextLink"u8))
                 {
                     nextLink = property.Value.GetString();
                     continue;

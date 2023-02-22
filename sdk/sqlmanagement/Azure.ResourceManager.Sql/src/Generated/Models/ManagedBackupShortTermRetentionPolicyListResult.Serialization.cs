@@ -8,6 +8,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using Azure.Core;
+using Azure.ResourceManager.Sql;
 
 namespace Azure.ResourceManager.Sql.Models
 {
@@ -15,26 +16,26 @@ namespace Azure.ResourceManager.Sql.Models
     {
         internal static ManagedBackupShortTermRetentionPolicyListResult DeserializeManagedBackupShortTermRetentionPolicyListResult(JsonElement element)
         {
-            Optional<IReadOnlyList<ManagedBackupShortTermRetentionPolicy>> value = default;
+            Optional<IReadOnlyList<ManagedBackupShortTermRetentionPolicyData>> value = default;
             Optional<string> nextLink = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("value"))
+                if (property.NameEquals("value"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    List<ManagedBackupShortTermRetentionPolicy> array = new List<ManagedBackupShortTermRetentionPolicy>();
+                    List<ManagedBackupShortTermRetentionPolicyData> array = new List<ManagedBackupShortTermRetentionPolicyData>();
                     foreach (var item in property.Value.EnumerateArray())
                     {
-                        array.Add(ManagedBackupShortTermRetentionPolicy.DeserializeManagedBackupShortTermRetentionPolicy(item));
+                        array.Add(ManagedBackupShortTermRetentionPolicyData.DeserializeManagedBackupShortTermRetentionPolicyData(item));
                     }
                     value = array;
                     continue;
                 }
-                if (property.NameEquals("nextLink"))
+                if (property.NameEquals("nextLink"u8))
                 {
                     nextLink = property.Value.GetString();
                     continue;

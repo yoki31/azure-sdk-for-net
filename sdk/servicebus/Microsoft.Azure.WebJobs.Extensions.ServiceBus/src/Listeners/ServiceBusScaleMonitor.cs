@@ -11,35 +11,32 @@ using System.Globalization;
 using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
 using Microsoft.Azure.WebJobs.Extensions.ServiceBus.Config;
+using Microsoft.Azure.WebJobs.Extensions.ServiceBus.Listeners;
 
 namespace Microsoft.Azure.WebJobs.ServiceBus.Listeners
 {
     internal class ServiceBusScaleMonitor : IScaleMonitor<ServiceBusTriggerMetrics>
     {
-        private const string DeadLetterQueuePath = @"/$DeadLetterQueue";
-
         private readonly string _functionId;
-        private readonly ServiceBusEntityType _serviceBusEntityType;
         private readonly string _entityPath;
         private readonly ScaleMonitorDescriptor _scaleMonitorDescriptor;
-        private readonly bool _isListeningOnDeadLetterQueue;
-        private readonly Lazy<ServiceBusReceiver> _receiver;
-        private readonly Lazy<ServiceBusAdministrationClient> _administrationClient;
         private readonly ILogger<ServiceBusScaleMonitor> _logger;
+        private readonly ServiceBusMetricsProvider _serviceBusMetricsProvider;
 
-        private DateTime _nextWarningTime;
-
-        public ServiceBusScaleMonitor(string functionId, ServiceBusEntityType serviceBusEntityType, string entityPath, string connection, Lazy<ServiceBusReceiver> receiver, ILoggerFactory loggerFactory, ServiceBusClientFactory clientFactory)
+        public ServiceBusScaleMonitor(
+            string functionId,
+            string entityPath,
+            ServiceBusEntityType entityType,
+            Lazy<ServiceBusReceiver> receiver,
+            Lazy<ServiceBusAdministrationClient> administrationClient,
+            ILoggerFactory loggerFactory
+            )
         {
             _functionId = functionId;
-            _serviceBusEntityType = serviceBusEntityType;
             _entityPath = entityPath;
-            _scaleMonitorDescriptor = new ScaleMonitorDescriptor($"{_functionId}-ServiceBusTrigger-{_entityPath}".ToLower(CultureInfo.InvariantCulture));
-            _isListeningOnDeadLetterQueue = entityPath.EndsWith(DeadLetterQueuePath, StringComparison.OrdinalIgnoreCase);
-            _receiver = receiver;
-            _administrationClient = new Lazy<ServiceBusAdministrationClient>(() => clientFactory.CreateAdministrationClient(connection));
+            _serviceBusMetricsProvider = new ServiceBusMetricsProvider(entityPath, entityType, receiver, administrationClient, loggerFactory);
+            _scaleMonitorDescriptor = new ScaleMonitorDescriptor($"{_functionId}-ServiceBusTrigger-{_entityPath}".ToLower(CultureInfo.InvariantCulture), functionId);
             _logger = loggerFactory.CreateLogger<ServiceBusScaleMonitor>();
-            _nextWarningTime = DateTime.UtcNow;
         }
 
         public ScaleMonitorDescriptor Descriptor
@@ -57,110 +54,7 @@ namespace Microsoft.Azure.WebJobs.ServiceBus.Listeners
 
         public async Task<ServiceBusTriggerMetrics> GetMetricsAsync()
         {
-            ServiceBusReceivedMessage message = null;
-            string entityName = _serviceBusEntityType == ServiceBusEntityType.Queue ? "queue" : "topic";
-
-            try
-            {
-                // Peek the first message in the queue without removing it from the queue
-                // PeekAsync remembers the sequence number of the last message, so the second call returns the second message instead of the first one
-                // Use PeekBySequenceNumberAsync with fromSequenceNumber = 0 to always get the first available message
-                message = await _receiver.Value.PeekMessageAsync(fromSequenceNumber: 0).ConfigureAwait(false);
-
-                if (_serviceBusEntityType == ServiceBusEntityType.Queue)
-                {
-                    return await GetQueueMetricsAsync(message).ConfigureAwait(false);
-                }
-                else
-                {
-                    return await GetTopicMetricsAsync(message).ConfigureAwait(false);
-                }
-            }
-            catch (ServiceBusException ex)
-            when (ex.Reason == ServiceBusFailureReason.MessagingEntityNotFound)
-            {
-                _logger.LogWarning($"ServiceBus {entityName} '{_entityPath}' was not found.");
-            }
-            catch (UnauthorizedAccessException) // When manage claim is not used on Service Bus connection string
-            {
-                if (TimeToLogWarning())
-                {
-                    _logger.LogWarning($"Connection string does not have Manage claim for {entityName} '{_entityPath}'. Failed to get {entityName} description to " +
-                        $"derive {entityName} length metrics. Falling back to using first message enqueued time.");
-                }
-            }
-            catch (Exception e)
-            {
-                _logger.LogWarning($"Error querying for Service Bus {entityName} scale status: {e.Message}");
-            }
-
-            // Path for connection strings with no manage claim
-            return CreateTriggerMetrics(message, 0, 0, 0, _isListeningOnDeadLetterQueue);
-        }
-
-        private async Task<ServiceBusTriggerMetrics> GetQueueMetricsAsync(ServiceBusReceivedMessage message)
-        {
-            QueueRuntimeProperties queueRuntimeProperties;
-            QueueProperties queueProperties;
-            long activeMessageCount = 0, deadLetterCount = 0;
-            int partitionCount = 0;
-
-            queueRuntimeProperties = await _administrationClient.Value.GetQueueRuntimePropertiesAsync(_entityPath).ConfigureAwait(false);
-            activeMessageCount = queueRuntimeProperties.ActiveMessageCount;
-            deadLetterCount = queueRuntimeProperties.DeadLetterMessageCount;
-
-            // If partitioning is turned on, then Service Bus automatically partitions queues into 16 partitions
-            // See more information here: https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-partitioning#standard
-            queueProperties = await _administrationClient.Value.GetQueueAsync(_entityPath).ConfigureAwait(false);
-            partitionCount = queueProperties.EnablePartitioning ? 16 : 0;
-
-            return CreateTriggerMetrics(message, activeMessageCount, deadLetterCount, partitionCount, _isListeningOnDeadLetterQueue);
-        }
-
-        private async Task<ServiceBusTriggerMetrics> GetTopicMetricsAsync(ServiceBusReceivedMessage message)
-        {
-            TopicProperties topicProperties;
-            SubscriptionRuntimeProperties subscriptionProperties;
-            string topicPath, subscriptionPath;
-            long activeMessageCount = 0, deadLetterCount = 0;
-            int partitionCount = 0;
-
-            ServiceBusEntityPathHelper.ParseTopicAndSubscription(_entityPath, out topicPath, out subscriptionPath);
-
-            subscriptionProperties = await _administrationClient.Value.GetSubscriptionRuntimePropertiesAsync(topicPath, subscriptionPath).ConfigureAwait(false);
-            activeMessageCount = subscriptionProperties.ActiveMessageCount;
-            deadLetterCount = subscriptionProperties.DeadLetterMessageCount;
-
-            // If partitioning is turned on, then Service Bus automatically partitions queues into 16 partitions
-            // See more information here: https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-partitioning#standard
-            topicProperties = await _administrationClient.Value.GetTopicAsync(topicPath).ConfigureAwait(false);
-            partitionCount = topicProperties.EnablePartitioning ? 16 : 0;
-
-            return CreateTriggerMetrics(message, activeMessageCount, deadLetterCount, partitionCount, _isListeningOnDeadLetterQueue);
-        }
-
-        internal static ServiceBusTriggerMetrics CreateTriggerMetrics(ServiceBusReceivedMessage message, long activeMessageCount, long deadLetterCount, int partitionCount, bool isListeningOnDeadLetterQueue)
-        {
-            long totalNewMessageCount = 0;
-            TimeSpan queueTime = TimeSpan.Zero;
-
-            if (message != null)
-            {
-                queueTime = DateTimeOffset.UtcNow.Subtract(message.EnqueuedTime);
-                totalNewMessageCount = 1; // There's at least one if message != null. Default for connection string with no manage claim
-            }
-
-            if ((!isListeningOnDeadLetterQueue && activeMessageCount > 0) || (isListeningOnDeadLetterQueue && deadLetterCount > 0))
-            {
-                totalNewMessageCount = isListeningOnDeadLetterQueue ? deadLetterCount : activeMessageCount;
-            }
-
-            return new ServiceBusTriggerMetrics
-            {
-                MessageCount = totalNewMessageCount,
-                PartitionCount = partitionCount,
-                QueueTime = queueTime
-            };
+            return await _serviceBusMetricsProvider.GetMetricsAsync().ConfigureAwait(false);
         }
 
         ScaleStatus IScaleMonitor.GetScaleStatus(ScaleStatusContext context)
@@ -284,17 +178,6 @@ namespace Microsoft.Azure.WebJobs.ServiceBus.Listeners
             _logger.LogInformation($"Service Bus entity '{_entityPath}' is steady.");
 
             return status;
-        }
-
-        private bool TimeToLogWarning()
-        {
-            DateTime currentTime = DateTime.UtcNow;
-            bool timeToLog = currentTime >= _nextWarningTime;
-            if (timeToLog)
-            {
-                _nextWarningTime = currentTime.AddHours(1);
-            }
-            return timeToLog;
         }
 
         private static bool IsTrueForLastN(IList<ServiceBusTriggerMetrics> samples, int count, Func<ServiceBusTriggerMetrics, ServiceBusTriggerMetrics, bool> predicate)

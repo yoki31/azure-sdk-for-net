@@ -8,6 +8,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using Azure.Core;
+using Azure.ResourceManager.CosmosDB;
 
 namespace Azure.ResourceManager.CosmosDB.Models
 {
@@ -15,20 +16,20 @@ namespace Azure.ResourceManager.CosmosDB.Models
     {
         internal static DatabaseAccountsListResult DeserializeDatabaseAccountsListResult(JsonElement element)
         {
-            Optional<IReadOnlyList<DatabaseAccountGetResults>> value = default;
+            Optional<IReadOnlyList<CosmosDBAccountData>> value = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("value"))
+                if (property.NameEquals("value"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    List<DatabaseAccountGetResults> array = new List<DatabaseAccountGetResults>();
+                    List<CosmosDBAccountData> array = new List<CosmosDBAccountData>();
                     foreach (var item in property.Value.EnumerateArray())
                     {
-                        array.Add(DatabaseAccountGetResults.DeserializeDatabaseAccountGetResults(item));
+                        array.Add(CosmosDBAccountData.DeserializeCosmosDBAccountData(item));
                     }
                     value = array;
                     continue;

@@ -14,47 +14,48 @@ namespace Azure.ResourceManager.Compute.Models
     {
         internal static RestorePointSourceMetadata DeserializeRestorePointSourceMetadata(JsonElement element)
         {
-            Optional<HardwareProfile> hardwareProfile = default;
-            Optional<RestorePointSourceVMStorageProfile> storageProfile = default;
-            Optional<OSProfile> osProfile = default;
+            Optional<VirtualMachineHardwareProfile> hardwareProfile = default;
+            Optional<RestorePointSourceVmStorageProfile> storageProfile = default;
+            Optional<VirtualMachineOSProfile> osProfile = default;
             Optional<DiagnosticsProfile> diagnosticsProfile = default;
             Optional<string> licenseType = default;
             Optional<string> vmId = default;
             Optional<SecurityProfile> securityProfile = default;
-            Optional<string> location = default;
+            Optional<AzureLocation> location = default;
+            Optional<string> userData = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("hardwareProfile"))
+                if (property.NameEquals("hardwareProfile"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    hardwareProfile = HardwareProfile.DeserializeHardwareProfile(property.Value);
+                    hardwareProfile = VirtualMachineHardwareProfile.DeserializeVirtualMachineHardwareProfile(property.Value);
                     continue;
                 }
-                if (property.NameEquals("storageProfile"))
+                if (property.NameEquals("storageProfile"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    storageProfile = RestorePointSourceVMStorageProfile.DeserializeRestorePointSourceVMStorageProfile(property.Value);
+                    storageProfile = RestorePointSourceVmStorageProfile.DeserializeRestorePointSourceVmStorageProfile(property.Value);
                     continue;
                 }
-                if (property.NameEquals("osProfile"))
+                if (property.NameEquals("osProfile"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    osProfile = OSProfile.DeserializeOSProfile(property.Value);
+                    osProfile = VirtualMachineOSProfile.DeserializeVirtualMachineOSProfile(property.Value);
                     continue;
                 }
-                if (property.NameEquals("diagnosticsProfile"))
+                if (property.NameEquals("diagnosticsProfile"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -64,17 +65,17 @@ namespace Azure.ResourceManager.Compute.Models
                     diagnosticsProfile = DiagnosticsProfile.DeserializeDiagnosticsProfile(property.Value);
                     continue;
                 }
-                if (property.NameEquals("licenseType"))
+                if (property.NameEquals("licenseType"u8))
                 {
                     licenseType = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("vmId"))
+                if (property.NameEquals("vmId"u8))
                 {
                     vmId = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("securityProfile"))
+                if (property.NameEquals("securityProfile"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -84,13 +85,23 @@ namespace Azure.ResourceManager.Compute.Models
                     securityProfile = SecurityProfile.DeserializeSecurityProfile(property.Value);
                     continue;
                 }
-                if (property.NameEquals("location"))
+                if (property.NameEquals("location"u8))
                 {
-                    location = property.Value.GetString();
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        property.ThrowNonNullablePropertyIsNull();
+                        continue;
+                    }
+                    location = new AzureLocation(property.Value.GetString());
+                    continue;
+                }
+                if (property.NameEquals("userData"u8))
+                {
+                    userData = property.Value.GetString();
                     continue;
                 }
             }
-            return new RestorePointSourceMetadata(hardwareProfile.Value, storageProfile.Value, osProfile.Value, diagnosticsProfile.Value, licenseType.Value, vmId.Value, securityProfile.Value, location.Value);
+            return new RestorePointSourceMetadata(hardwareProfile.Value, storageProfile.Value, osProfile.Value, diagnosticsProfile.Value, licenseType.Value, vmId.Value, securityProfile.Value, Optional.ToNullable(location), userData.Value);
         }
     }
 }

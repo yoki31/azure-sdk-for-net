@@ -8,6 +8,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using Azure.Core;
+using Azure.ResourceManager.CosmosDB;
 
 namespace Azure.ResourceManager.CosmosDB.Models
 {
@@ -15,20 +16,20 @@ namespace Azure.ResourceManager.CosmosDB.Models
     {
         internal static CassandraKeyspaceListResult DeserializeCassandraKeyspaceListResult(JsonElement element)
         {
-            Optional<IReadOnlyList<CassandraKeyspaceGetResults>> value = default;
+            Optional<IReadOnlyList<CassandraKeyspaceData>> value = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("value"))
+                if (property.NameEquals("value"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    List<CassandraKeyspaceGetResults> array = new List<CassandraKeyspaceGetResults>();
+                    List<CassandraKeyspaceData> array = new List<CassandraKeyspaceData>();
                     foreach (var item in property.Value.EnumerateArray())
                     {
-                        array.Add(CassandraKeyspaceGetResults.DeserializeCassandraKeyspaceGetResults(item));
+                        array.Add(CassandraKeyspaceData.DeserializeCassandraKeyspaceData(item));
                     }
                     value = array;
                     continue;

@@ -8,6 +8,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using Azure.Core;
+using Azure.ResourceManager.Sql;
 
 namespace Azure.ResourceManager.Sql.Models
 {
@@ -15,26 +16,26 @@ namespace Azure.ResourceManager.Sql.Models
     {
         internal static WorkloadGroupListResult DeserializeWorkloadGroupListResult(JsonElement element)
         {
-            Optional<IReadOnlyList<WorkloadGroup>> value = default;
+            Optional<IReadOnlyList<WorkloadGroupData>> value = default;
             Optional<string> nextLink = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("value"))
+                if (property.NameEquals("value"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    List<WorkloadGroup> array = new List<WorkloadGroup>();
+                    List<WorkloadGroupData> array = new List<WorkloadGroupData>();
                     foreach (var item in property.Value.EnumerateArray())
                     {
-                        array.Add(WorkloadGroup.DeserializeWorkloadGroup(item));
+                        array.Add(WorkloadGroupData.DeserializeWorkloadGroupData(item));
                     }
                     value = array;
                     continue;
                 }
-                if (property.NameEquals("nextLink"))
+                if (property.NameEquals("nextLink"u8))
                 {
                     nextLink = property.Value.GetString();
                     continue;

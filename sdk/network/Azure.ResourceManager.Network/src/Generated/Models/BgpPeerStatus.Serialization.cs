@@ -5,6 +5,7 @@
 
 #nullable disable
 
+using System;
 using System.Text.Json;
 using Azure.Core;
 
@@ -18,23 +19,23 @@ namespace Azure.ResourceManager.Network.Models
             Optional<string> neighbor = default;
             Optional<long> asn = default;
             Optional<BgpPeerState> state = default;
-            Optional<string> connectedDuration = default;
+            Optional<TimeSpan> connectedDuration = default;
             Optional<long> routesReceived = default;
             Optional<long> messagesSent = default;
             Optional<long> messagesReceived = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("localAddress"))
+                if (property.NameEquals("localAddress"u8))
                 {
                     localAddress = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("neighbor"))
+                if (property.NameEquals("neighbor"u8))
                 {
                     neighbor = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("asn"))
+                if (property.NameEquals("asn"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -44,7 +45,7 @@ namespace Azure.ResourceManager.Network.Models
                     asn = property.Value.GetInt64();
                     continue;
                 }
-                if (property.NameEquals("state"))
+                if (property.NameEquals("state"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -54,12 +55,17 @@ namespace Azure.ResourceManager.Network.Models
                     state = new BgpPeerState(property.Value.GetString());
                     continue;
                 }
-                if (property.NameEquals("connectedDuration"))
+                if (property.NameEquals("connectedDuration"u8))
                 {
-                    connectedDuration = property.Value.GetString();
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        property.ThrowNonNullablePropertyIsNull();
+                        continue;
+                    }
+                    connectedDuration = property.Value.GetTimeSpan("c");
                     continue;
                 }
-                if (property.NameEquals("routesReceived"))
+                if (property.NameEquals("routesReceived"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -69,7 +75,7 @@ namespace Azure.ResourceManager.Network.Models
                     routesReceived = property.Value.GetInt64();
                     continue;
                 }
-                if (property.NameEquals("messagesSent"))
+                if (property.NameEquals("messagesSent"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -79,7 +85,7 @@ namespace Azure.ResourceManager.Network.Models
                     messagesSent = property.Value.GetInt64();
                     continue;
                 }
-                if (property.NameEquals("messagesReceived"))
+                if (property.NameEquals("messagesReceived"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -90,7 +96,7 @@ namespace Azure.ResourceManager.Network.Models
                     continue;
                 }
             }
-            return new BgpPeerStatus(localAddress.Value, neighbor.Value, Optional.ToNullable(asn), Optional.ToNullable(state), connectedDuration.Value, Optional.ToNullable(routesReceived), Optional.ToNullable(messagesSent), Optional.ToNullable(messagesReceived));
+            return new BgpPeerStatus(localAddress.Value, neighbor.Value, Optional.ToNullable(asn), Optional.ToNullable(state), Optional.ToNullable(connectedDuration), Optional.ToNullable(routesReceived), Optional.ToNullable(messagesSent), Optional.ToNullable(messagesReceived));
         }
     }
 }

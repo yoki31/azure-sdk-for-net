@@ -1,6 +1,6 @@
 # Release History
 
-## 1.0.0-beta.6 (Unreleased)
+## 1.1.0-beta.7 (Unreleased)
 
 ### Features Added
 
@@ -10,11 +10,79 @@
 
 ### Other Changes
 
+## 1.1.0-beta.6 (2023-02-07)
+### Features Added
+
+- Added method `DownloadBlobTo()` to `ContainerRegistryBlobClient`.  This method downloads a blob to a provided Stream, using multiple requests if the blob size exceeds the maximum chunk size.
+- Added an optional `ManifestMediaType` parameter to `UploadManifest()` to enable uploading image manifests of any type.
+- Added `MediaType` property to `DownloadManifestResult` to enable checking the media type prior to deserializing returned manifest.
+
+### Breaking Changes
+
+- Changed signatures of `DownloadManifest()` and `UploadManifest()` methods on `ContainerRegistryBlobClient`.
+- Removed `DownloadManifestOptions` and `UploadManifestOptions` types.
+- Removed `ArtifactManifest` type.
+- Removed `Manifest` and `ManifestStream` properties from `DownloadManifestResult`.
+
+## 1.1.0-beta.5 (2023-01-10)
+
+### Features Added
+
+- `ContainerRegistryBlobClient.UploadBlob()` method now uploads a blob using multiple requests if it exceeds the maximum chunk size.  Chunk size defaults to 4MB and can be modified by passing `UploadBlobOptions`.
+- Added `Pipeline` property to `ContainerRegistryClient` and `ContainerRegistryBlobClient` to enable advanced message processing scenarios.
+
+### Breaking Changes
+
+- Changed type of `Manifest` property on `DownloadManifestResult` from `OciManifest` to `ArtifactManfest` to accommodate non-OCI manifest types in the future.  Callers must now downcast `Manifest` to the appropriate type.
+
+## 1.1.0-beta.4 (2022-04-05)
+
+### Features Added
+
+- Unifies features from the earlier preview releases with the latest stable release.
+
+## 1.0.0 (2022-01-11)
+
+### Features Added
+
+- Adds stable features and bug fixes from the earlier preview releases.
+
+### Breaking Changes
+
+- Renamed `ArtifactManifestOrderBy` to `ArtifactManifestOrder`.
+- Renamed `ArtifactTagOrderBy` to `ArtifactTagOrder`.
+
 ## 1.0.0-beta.5 (2021-11-18)
 
 ### Features Added
+
 - Updated the supported service version to "2021-07-01".
 - Added support to create instances of `ArtifactManifestProperties` using the `ContainerRegistryModelFactory`.
+
+## 1.1.0-beta.3 (2021-11-09)
+
+### Features Added
+
+- Added support for [anonymous pull access](https://docs.microsoft.com/azure/container-registry/anonymous-pull-access#configure-anonymous-pull-access) using the `ContainerRegistryBlobClient`
+
+## 1.1.0-beta.2 (2021-10-13)
+
+### Features Added
+
+- Added an overload for `UploadManifest(Async)` method that takes the manifest `Stream` as an input.
+- Added methods in `ContainerRegistryModelFactory` that create instances of `DownloadBlobResult`, `DownloadManifestResult`, `UploadBlobResult` and `UploadManifestResult` for mocking.
+- Added `DownloadManifestOptions` type to allow callers to  pass-in either a tag or a digest in `DownloadManifest(Async)`.
+- Added `ManifestStream` as a property in `DownloadManifestResult` that contains the raw manifest stream from the service response.
+
+### Breaking Changes
+
+- Changed `DownloadManifest(Async)` method to take `DownloadManifestOptions` as an input parameter. This allows callers to pass-in either a tag or a digest as the manifest identifier.
+
+## 1.1.0-beta.1 (2021-09-07)
+
+### Features Added
+
+- Added `ContainerRegistryBlobClient` with methods to upload and download OCI Manifests and artifact blobs, to enable implementation of push/pull for OCI artifacts.
 
 ## 1.0.0-beta.4 (2021-08-10)
 

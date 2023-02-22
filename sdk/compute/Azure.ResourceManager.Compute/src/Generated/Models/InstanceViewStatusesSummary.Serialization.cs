@@ -11,14 +11,14 @@ using Azure.Core;
 
 namespace Azure.ResourceManager.Compute.Models
 {
-    public partial class InstanceViewStatusesSummary
+    internal partial class InstanceViewStatusesSummary
     {
         internal static InstanceViewStatusesSummary DeserializeInstanceViewStatusesSummary(JsonElement element)
         {
             Optional<IReadOnlyList<StatusCodeCount>> statusesSummary = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("statusesSummary"))
+                if (property.NameEquals("statusesSummary"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {

@@ -15,27 +15,27 @@ namespace Azure.ResourceManager.Network.Models
         internal static VirtualApplianceNicProperties DeserializeVirtualApplianceNicProperties(JsonElement element)
         {
             Optional<string> name = default;
-            Optional<string> publicIpAddress = default;
-            Optional<string> privateIpAddress = default;
+            Optional<string> publicIPAddress = default;
+            Optional<string> privateIPAddress = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("name"))
+                if (property.NameEquals("name"u8))
                 {
                     name = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("publicIpAddress"))
+                if (property.NameEquals("publicIpAddress"u8))
                 {
-                    publicIpAddress = property.Value.GetString();
+                    publicIPAddress = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("privateIpAddress"))
+                if (property.NameEquals("privateIpAddress"u8))
                 {
-                    privateIpAddress = property.Value.GetString();
+                    privateIPAddress = property.Value.GetString();
                     continue;
                 }
             }
-            return new VirtualApplianceNicProperties(name.Value, publicIpAddress.Value, privateIpAddress.Value);
+            return new VirtualApplianceNicProperties(name.Value, publicIPAddress.Value, privateIPAddress.Value);
         }
     }
 }

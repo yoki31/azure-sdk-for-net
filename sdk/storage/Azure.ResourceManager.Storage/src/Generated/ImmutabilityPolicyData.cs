@@ -5,13 +5,15 @@
 
 #nullable disable
 
-using Azure.ResourceManager;
+using Azure;
+using Azure.Core;
+using Azure.ResourceManager.Models;
 using Azure.ResourceManager.Storage.Models;
 
 namespace Azure.ResourceManager.Storage
 {
     /// <summary> A class representing the ImmutabilityPolicy data model. </summary>
-    public partial class ImmutabilityPolicyData : AzureEntityResource
+    public partial class ImmutabilityPolicyData : ResourceData
     {
         /// <summary> Initializes a new instance of ImmutabilityPolicyData. </summary>
         public ImmutabilityPolicyData()
@@ -21,16 +23,20 @@ namespace Azure.ResourceManager.Storage
         /// <summary> Initializes a new instance of ImmutabilityPolicyData. </summary>
         /// <param name="id"> The id. </param>
         /// <param name="name"> The name. </param>
-        /// <param name="type"> The type. </param>
-        /// <param name="etag"> Resource Etag. </param>
+        /// <param name="resourceType"> The resourceType. </param>
+        /// <param name="systemData"> The systemData. </param>
         /// <param name="immutabilityPeriodSinceCreationInDays"> The immutability period for the blobs in the container since the policy creation, in days. </param>
         /// <param name="state"> The ImmutabilityPolicy state of a blob container, possible values include: Locked and Unlocked. </param>
         /// <param name="allowProtectedAppendWrites"> This property can only be changed for unlocked time-based retention policies. When enabled, new blocks can be written to an append blob while maintaining immutability protection and compliance. Only new blocks can be added and any existing blocks cannot be modified or deleted. This property cannot be changed with ExtendImmutabilityPolicy API. </param>
-        internal ImmutabilityPolicyData(ResourceIdentifier id, string name, ResourceType type, string etag, int? immutabilityPeriodSinceCreationInDays, ImmutabilityPolicyState? state, bool? allowProtectedAppendWrites) : base(id, name, type, etag)
+        /// <param name="allowProtectedAppendWritesAll"> This property can only be changed for unlocked time-based retention policies. When enabled, new blocks can be written to both &apos;Append and Bock Blobs&apos; while maintaining immutability protection and compliance. Only new blocks can be added and any existing blocks cannot be modified or deleted. This property cannot be changed with ExtendImmutabilityPolicy API. The &apos;allowProtectedAppendWrites&apos; and &apos;allowProtectedAppendWritesAll&apos; properties are mutually exclusive. </param>
+        /// <param name="etag"> Resource Etag. </param>
+        internal ImmutabilityPolicyData(ResourceIdentifier id, string name, ResourceType resourceType, SystemData systemData, int? immutabilityPeriodSinceCreationInDays, ImmutabilityPolicyState? state, bool? allowProtectedAppendWrites, bool? allowProtectedAppendWritesAll, ETag? etag) : base(id, name, resourceType, systemData)
         {
             ImmutabilityPeriodSinceCreationInDays = immutabilityPeriodSinceCreationInDays;
             State = state;
             AllowProtectedAppendWrites = allowProtectedAppendWrites;
+            AllowProtectedAppendWritesAll = allowProtectedAppendWritesAll;
+            ETag = etag;
         }
 
         /// <summary> The immutability period for the blobs in the container since the policy creation, in days. </summary>
@@ -39,5 +45,9 @@ namespace Azure.ResourceManager.Storage
         public ImmutabilityPolicyState? State { get; }
         /// <summary> This property can only be changed for unlocked time-based retention policies. When enabled, new blocks can be written to an append blob while maintaining immutability protection and compliance. Only new blocks can be added and any existing blocks cannot be modified or deleted. This property cannot be changed with ExtendImmutabilityPolicy API. </summary>
         public bool? AllowProtectedAppendWrites { get; set; }
+        /// <summary> This property can only be changed for unlocked time-based retention policies. When enabled, new blocks can be written to both &apos;Append and Bock Blobs&apos; while maintaining immutability protection and compliance. Only new blocks can be added and any existing blocks cannot be modified or deleted. This property cannot be changed with ExtendImmutabilityPolicy API. The &apos;allowProtectedAppendWrites&apos; and &apos;allowProtectedAppendWritesAll&apos; properties are mutually exclusive. </summary>
+        public bool? AllowProtectedAppendWritesAll { get; set; }
+        /// <summary> Resource Etag. </summary>
+        public ETag? ETag { get; }
     }
 }

@@ -12,14 +12,14 @@ using Azure.ResourceManager.Storage;
 
 namespace Azure.ResourceManager.Storage.Models
 {
-    public partial class ListTableServices
+    internal partial class ListTableServices
     {
         internal static ListTableServices DeserializeListTableServices(JsonElement element)
         {
             Optional<IReadOnlyList<TableServiceData>> value = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("value"))
+                if (property.NameEquals("value"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {

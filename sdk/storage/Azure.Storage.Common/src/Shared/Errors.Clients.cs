@@ -16,9 +16,6 @@ namespace Azure.Storage
         public static ArgumentException CannotBothBeNotNull(string param0, string param1)
             => new ArgumentException($"{param0} and {param1} cannot both be set");
 
-        public static ArgumentException InvalidArgument(string paramName)
-            => new ArgumentException($"{paramName} is invalid");
-
         public static ArgumentOutOfRangeException MustBeGreaterThanOrEqualTo(string paramName, long value)
             => new ArgumentOutOfRangeException(paramName, $"Value must be greater than or equal to {value}");
 
@@ -105,13 +102,8 @@ namespace Azure.Storage
         public static ArgumentException VersionNotSupported(string paramName)
             => new ArgumentException($"The version specified by {paramName} is not supported by this library.");
 
-        public static RequestFailedException ClientRequestIdMismatch(ClientDiagnostics clientDiagnostics, Response response, string echo, string original)
-            => clientDiagnostics.CreateRequestFailedExceptionWithContent(
-                response,
-                $"Response x-ms-client-request-id '{echo}' does not match the original expected request id, '{original}'.", errorCode: response.GetErrorCode(null));
-
-        public static ArgumentException CannotDeferTransactionalHashVerification()
-            => new ArgumentException("Cannot defer transactional hash verification. Returned hash is unavailable to caller.");
+        public static RequestFailedException ClientRequestIdMismatch(Response response, string echo, string original)
+            => new RequestFailedException(response.Status, $"Response x-ms-client-request-id '{echo}' does not match the original expected request id, '{original}'.", null);
 
         public static ArgumentException TransactionalHashingNotSupportedWithClientSideEncryption()
             => new ArgumentException("Client-side encryption and transactional hashing are not supported at the same time.");

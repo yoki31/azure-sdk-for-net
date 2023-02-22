@@ -6,16 +6,19 @@ Run `dotnet build /t:GenerateCode` to generate code.
 > see https://aka.ms/autorest
 
 ``` yaml
-tag: package-artifacts-composite-v2
+tag: package-artifacts-composite-v6
 require:
-    - https://github.com/Azure/azure-rest-api-specs/blob/9ab141452538ce5cf1427300d3c181923a8a8765/specification/synapse/data-plane/readme.md
+    - https://github.com/Azure/azure-rest-api-specs/blob/61a8b1a62420c393fe5276c47373ea8dce74a985/specification/synapse/data-plane/readme.md
 namespace: Azure.Analytics.Synapse.Artifacts
+generation1-convenience-client: true
 public-clients: true
 security: AADToken
 security-scopes: https://dev.azuresynapse.net/.default
 modelerfour:
   lenient-model-deduplication: true
   seal-single-value-enum-by-default: true
+model-factory-for-hlc:
+- ManagedIntegrationRuntime
 ```
 
 ### Make Endpoint type as Uri
@@ -74,12 +77,14 @@ directive:
           path.endsWith("DatasetDataElement") ||
           path.endsWith("DatasetSchemaDataElement") ||
           path.endsWith("DatasetStorageFormat") ||
+          path.endsWith("EditTablesRequest") ||
           path.endsWith("EvaluateDataFlowExpressionRequest") ||
           path.endsWith("ExposureControlRequest") ||
           path.endsWith("ExposureControlResponse") ||
           path.endsWith("GetSsisObjectMetadataRequest") ||
           path.endsWith("JsonFormat") ||
           path.endsWith("JsonFormatFilePattern") ||
+          path.endsWith("LinkTableRequest") ||
           path.endsWith("OrcFormat") ||
           path.endsWith("ParquetFormat") ||
           path.endsWith("RerunTriggerListResponse") ||
@@ -102,4 +107,35 @@ directive:
         $[path]["x-csharp-usage"] = "converter";
       }
     }
+```
+
+### Fix spelling issues
+
+``` yaml
+directive:
+  from: swagger-document
+  where: $.definitions.Notebook.properties
+  transform: >
+    $.nbformat['x-ms-client-name'] = 'NotebookFormat';
+    $.nbformat_minor['x-ms-client-name'] = 'NotebookFormatMinor';
+```
+
+``` yaml
+directive:
+  from: swagger-document
+  where: $.definitions.TriggerRun.properties
+  transform: >
+    $.status["x-ms-enum"].values = [{value: "Succeeded", name: "Succeeded" },{value: "Failed", name: "Failed" },{value: "Inprogress", name: "InProgress" }];
+```
+
+### Suppress Abstract Base Class
+
+``` yaml
+suppress-abstract-base-class:
+- CustomSetupBase
+- DataFlow
+- DependencyReference
+- LinkedIntegrationRuntimeType
+- SecretBase
+- WebLinkedServiceTypeProperties
 ```

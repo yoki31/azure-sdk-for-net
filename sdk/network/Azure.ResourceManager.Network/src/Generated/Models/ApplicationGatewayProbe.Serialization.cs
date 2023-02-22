@@ -6,6 +6,7 @@
 #nullable disable
 
 using System.Text.Json;
+using Azure;
 using Azure.Core;
 
 namespace Azure.ResourceManager.Network.Models
@@ -15,66 +16,66 @@ namespace Azure.ResourceManager.Network.Models
         void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
-            if (Optional.IsDefined(Name))
-            {
-                writer.WritePropertyName("name");
-                writer.WriteStringValue(Name);
-            }
             if (Optional.IsDefined(Id))
             {
-                writer.WritePropertyName("id");
+                writer.WritePropertyName("id"u8);
                 writer.WriteStringValue(Id);
             }
-            writer.WritePropertyName("properties");
+            if (Optional.IsDefined(Name))
+            {
+                writer.WritePropertyName("name"u8);
+                writer.WriteStringValue(Name);
+            }
+            writer.WritePropertyName("properties"u8);
             writer.WriteStartObject();
             if (Optional.IsDefined(Protocol))
             {
-                writer.WritePropertyName("protocol");
+                writer.WritePropertyName("protocol"u8);
                 writer.WriteStringValue(Protocol.Value.ToString());
             }
             if (Optional.IsDefined(Host))
             {
-                writer.WritePropertyName("host");
+                writer.WritePropertyName("host"u8);
                 writer.WriteStringValue(Host);
             }
             if (Optional.IsDefined(Path))
             {
-                writer.WritePropertyName("path");
+                writer.WritePropertyName("path"u8);
                 writer.WriteStringValue(Path);
             }
-            if (Optional.IsDefined(Interval))
+            if (Optional.IsDefined(IntervalInSeconds))
             {
-                writer.WritePropertyName("interval");
-                writer.WriteNumberValue(Interval.Value);
+                writer.WritePropertyName("interval"u8);
+                writer.WriteNumberValue(IntervalInSeconds.Value);
             }
-            if (Optional.IsDefined(Timeout))
+            if (Optional.IsDefined(TimeoutInSeconds))
             {
-                writer.WritePropertyName("timeout");
-                writer.WriteNumberValue(Timeout.Value);
+                writer.WritePropertyName("timeout"u8);
+                writer.WriteNumberValue(TimeoutInSeconds.Value);
             }
             if (Optional.IsDefined(UnhealthyThreshold))
             {
-                writer.WritePropertyName("unhealthyThreshold");
+                writer.WritePropertyName("unhealthyThreshold"u8);
                 writer.WriteNumberValue(UnhealthyThreshold.Value);
             }
             if (Optional.IsDefined(PickHostNameFromBackendHttpSettings))
             {
-                writer.WritePropertyName("pickHostNameFromBackendHttpSettings");
+                writer.WritePropertyName("pickHostNameFromBackendHttpSettings"u8);
                 writer.WriteBooleanValue(PickHostNameFromBackendHttpSettings.Value);
             }
             if (Optional.IsDefined(MinServers))
             {
-                writer.WritePropertyName("minServers");
+                writer.WritePropertyName("minServers"u8);
                 writer.WriteNumberValue(MinServers.Value);
             }
             if (Optional.IsDefined(Match))
             {
-                writer.WritePropertyName("match");
+                writer.WritePropertyName("match"u8);
                 writer.WriteObjectValue(Match);
             }
             if (Optional.IsDefined(Port))
             {
-                writer.WritePropertyName("port");
+                writer.WritePropertyName("port"u8);
                 writer.WriteNumberValue(Port.Value);
             }
             writer.WriteEndObject();
@@ -83,10 +84,10 @@ namespace Azure.ResourceManager.Network.Models
 
         internal static ApplicationGatewayProbe DeserializeApplicationGatewayProbe(JsonElement element)
         {
+            Optional<ETag> etag = default;
+            Optional<ResourceIdentifier> id = default;
             Optional<string> name = default;
-            Optional<string> etag = default;
-            Optional<string> type = default;
-            Optional<string> id = default;
+            Optional<ResourceType> type = default;
             Optional<ApplicationGatewayProtocol> protocol = default;
             Optional<string> host = default;
             Optional<string> path = default;
@@ -96,31 +97,46 @@ namespace Azure.ResourceManager.Network.Models
             Optional<bool> pickHostNameFromBackendHttpSettings = default;
             Optional<int> minServers = default;
             Optional<ApplicationGatewayProbeHealthResponseMatch> match = default;
-            Optional<ProvisioningState> provisioningState = default;
+            Optional<NetworkProvisioningState> provisioningState = default;
             Optional<int> port = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("name"))
+                if (property.NameEquals("etag"u8))
+                {
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        property.ThrowNonNullablePropertyIsNull();
+                        continue;
+                    }
+                    etag = new ETag(property.Value.GetString());
+                    continue;
+                }
+                if (property.NameEquals("id"u8))
+                {
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        property.ThrowNonNullablePropertyIsNull();
+                        continue;
+                    }
+                    id = new ResourceIdentifier(property.Value.GetString());
+                    continue;
+                }
+                if (property.NameEquals("name"u8))
                 {
                     name = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("etag"))
+                if (property.NameEquals("type"u8))
                 {
-                    etag = property.Value.GetString();
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        property.ThrowNonNullablePropertyIsNull();
+                        continue;
+                    }
+                    type = new ResourceType(property.Value.GetString());
                     continue;
                 }
-                if (property.NameEquals("type"))
-                {
-                    type = property.Value.GetString();
-                    continue;
-                }
-                if (property.NameEquals("id"))
-                {
-                    id = property.Value.GetString();
-                    continue;
-                }
-                if (property.NameEquals("properties"))
+                if (property.NameEquals("properties"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -129,7 +145,7 @@ namespace Azure.ResourceManager.Network.Models
                     }
                     foreach (var property0 in property.Value.EnumerateObject())
                     {
-                        if (property0.NameEquals("protocol"))
+                        if (property0.NameEquals("protocol"u8))
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
@@ -139,17 +155,17 @@ namespace Azure.ResourceManager.Network.Models
                             protocol = new ApplicationGatewayProtocol(property0.Value.GetString());
                             continue;
                         }
-                        if (property0.NameEquals("host"))
+                        if (property0.NameEquals("host"u8))
                         {
                             host = property0.Value.GetString();
                             continue;
                         }
-                        if (property0.NameEquals("path"))
+                        if (property0.NameEquals("path"u8))
                         {
                             path = property0.Value.GetString();
                             continue;
                         }
-                        if (property0.NameEquals("interval"))
+                        if (property0.NameEquals("interval"u8))
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
@@ -159,7 +175,7 @@ namespace Azure.ResourceManager.Network.Models
                             interval = property0.Value.GetInt32();
                             continue;
                         }
-                        if (property0.NameEquals("timeout"))
+                        if (property0.NameEquals("timeout"u8))
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
@@ -169,7 +185,7 @@ namespace Azure.ResourceManager.Network.Models
                             timeout = property0.Value.GetInt32();
                             continue;
                         }
-                        if (property0.NameEquals("unhealthyThreshold"))
+                        if (property0.NameEquals("unhealthyThreshold"u8))
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
@@ -179,7 +195,7 @@ namespace Azure.ResourceManager.Network.Models
                             unhealthyThreshold = property0.Value.GetInt32();
                             continue;
                         }
-                        if (property0.NameEquals("pickHostNameFromBackendHttpSettings"))
+                        if (property0.NameEquals("pickHostNameFromBackendHttpSettings"u8))
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
@@ -189,7 +205,7 @@ namespace Azure.ResourceManager.Network.Models
                             pickHostNameFromBackendHttpSettings = property0.Value.GetBoolean();
                             continue;
                         }
-                        if (property0.NameEquals("minServers"))
+                        if (property0.NameEquals("minServers"u8))
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
@@ -199,7 +215,7 @@ namespace Azure.ResourceManager.Network.Models
                             minServers = property0.Value.GetInt32();
                             continue;
                         }
-                        if (property0.NameEquals("match"))
+                        if (property0.NameEquals("match"u8))
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
@@ -209,17 +225,17 @@ namespace Azure.ResourceManager.Network.Models
                             match = ApplicationGatewayProbeHealthResponseMatch.DeserializeApplicationGatewayProbeHealthResponseMatch(property0.Value);
                             continue;
                         }
-                        if (property0.NameEquals("provisioningState"))
+                        if (property0.NameEquals("provisioningState"u8))
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
                                 property0.ThrowNonNullablePropertyIsNull();
                                 continue;
                             }
-                            provisioningState = new ProvisioningState(property0.Value.GetString());
+                            provisioningState = new NetworkProvisioningState(property0.Value.GetString());
                             continue;
                         }
-                        if (property0.NameEquals("port"))
+                        if (property0.NameEquals("port"u8))
                         {
                             if (property0.Value.ValueKind == JsonValueKind.Null)
                             {
@@ -233,7 +249,7 @@ namespace Azure.ResourceManager.Network.Models
                     continue;
                 }
             }
-            return new ApplicationGatewayProbe(id.Value, name.Value, etag.Value, type.Value, Optional.ToNullable(protocol), host.Value, path.Value, Optional.ToNullable(interval), Optional.ToNullable(timeout), Optional.ToNullable(unhealthyThreshold), Optional.ToNullable(pickHostNameFromBackendHttpSettings), Optional.ToNullable(minServers), match.Value, Optional.ToNullable(provisioningState), Optional.ToNullable(port));
+            return new ApplicationGatewayProbe(id.Value, name.Value, Optional.ToNullable(type), Optional.ToNullable(etag), Optional.ToNullable(protocol), host.Value, path.Value, Optional.ToNullable(interval), Optional.ToNullable(timeout), Optional.ToNullable(unhealthyThreshold), Optional.ToNullable(pickHostNameFromBackendHttpSettings), Optional.ToNullable(minServers), match.Value, Optional.ToNullable(provisioningState), Optional.ToNullable(port));
         }
     }
 }

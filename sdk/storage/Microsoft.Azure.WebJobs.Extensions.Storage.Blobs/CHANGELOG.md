@@ -1,5 +1,27 @@
 # Release History
 
+## 5.2.0-beta.1 (Unreleased)
+
+### Features Added
+
+### Breaking Changes
+
+### Bugs Fixed
+
+### Other Changes
+
+## 5.1.0 (2023-02-21)
+- Includes all features from 5.1.0-beta.1.
+- Added Target Based Scaling support for Storage Queues and Blobs
+
+## 5.1.0-beta.1 (2023-02-07)
+- Added logging for details of a storage blob listener on start/stop operations.
+- Updated BlobNameValidationAttribute to allow $web as a container name.
+- Added Blob storage support for ParameterBindingData reference type.
+
+## 5.0.1 (2022-05-02)
+- Implemented caching blobs in shared memory for faster I/O.
+
 ## 5.0.0 (2021-10-26)
 - General availability of Microsoft.Azure.WebJobs.Extensions.Storage.Blobs 5.0.0.
 - Fixed bug where internal message format of blob trigger didn't interop with previous major versions of the extension.

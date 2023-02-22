@@ -5,6 +5,7 @@
 
 #nullable disable
 
+using System;
 using System.Text.Json;
 using Azure.Core;
 
@@ -16,26 +17,31 @@ namespace Azure.ResourceManager.Network.Models
         {
             Optional<string> actionId = default;
             Optional<string> actionText = default;
-            Optional<string> actionUri = default;
+            Optional<Uri> actionUri = default;
             Optional<string> actionUriText = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("actionId"))
+                if (property.NameEquals("actionId"u8))
                 {
                     actionId = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("actionText"))
+                if (property.NameEquals("actionText"u8))
                 {
                     actionText = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("actionUri"))
+                if (property.NameEquals("actionUri"u8))
                 {
-                    actionUri = property.Value.GetString();
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        actionUri = null;
+                        continue;
+                    }
+                    actionUri = new Uri(property.Value.GetString());
                     continue;
                 }
-                if (property.NameEquals("actionUriText"))
+                if (property.NameEquals("actionUriText"u8))
                 {
                     actionUriText = property.Value.GetString();
                     continue;

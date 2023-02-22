@@ -10,14 +10,14 @@ using Azure.Core;
 
 namespace Azure.ResourceManager.Network.Models
 {
-    public partial class ConnectionMonitorIcmpConfiguration : IUtf8JsonSerializable
+    internal partial class ConnectionMonitorIcmpConfiguration : IUtf8JsonSerializable
     {
         void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
             if (Optional.IsDefined(DisableTraceRoute))
             {
-                writer.WritePropertyName("disableTraceRoute");
+                writer.WritePropertyName("disableTraceRoute"u8);
                 writer.WriteBooleanValue(DisableTraceRoute.Value);
             }
             writer.WriteEndObject();
@@ -28,7 +28,7 @@ namespace Azure.ResourceManager.Network.Models
             Optional<bool> disableTraceRoute = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("disableTraceRoute"))
+                if (property.NameEquals("disableTraceRoute"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {

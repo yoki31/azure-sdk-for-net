@@ -14,8 +14,7 @@ namespace Azure.Core
     /// </summary>
     public sealed class HttpMessage : IDisposable
     {
-        private Dictionary<string, object>? _properties;
-
+        private ArrayBackedPropertyBag<ulong, object> _propertyBag;
         private Response? _response;
 
         /// <summary>
@@ -28,6 +27,7 @@ namespace Azure.Core
             Request = request;
             ResponseClassifier = responseClassifier;
             BufferResponse = true;
+            _propertyBag = new ArrayBackedPropertyBag<ulong, object>();
         }
 
         /// <summary>
@@ -59,6 +59,8 @@ namespace Azure.Core
         /// </summary>
         public bool HasResponse => _response != null;
 
+        internal void ClearResponse() => _response = null;
+
         /// <summary>
         /// The <see cref="System.Threading.CancellationToken"/> to be used during the <see cref="HttpMessage"/> processing.
         /// </summary>
@@ -80,15 +82,34 @@ namespace Azure.Core
         /// </summary>
         public TimeSpan? NetworkTimeout { get; set; }
 
-        internal void AddPolicies(RequestContext context)
+        internal int RetryNumber { get; set; }
+
+        internal DateTimeOffset ProcessingStartTime { get; set; }
+
+        /// <summary>
+        /// The processing context for the message.
+        /// </summary>
+        public MessageProcessingContext ProcessingContext => new(this);
+
+        internal void ApplyRequestContext(RequestContext? context, ResponseClassifier? classifier)
         {
-            if (context == null || context.Policies == null || context.Policies.Count == 0)
+            if (context == null)
             {
                 return;
             }
 
-            Policies ??= new(context.Policies.Count);
-            Policies.AddRange(context.Policies);
+            context.Freeze();
+
+            if (context.Policies?.Count > 0)
+            {
+                Policies ??= new(context.Policies.Count);
+                Policies.AddRange(context.Policies);
+            }
+
+            if (classifier != null)
+            {
+                ResponseClassifier = context.Apply(classifier);
+            }
         }
 
         internal List<(HttpPipelinePosition Position, HttpPipelinePolicy Policy)>? Policies { get; set; }
@@ -102,7 +123,12 @@ namespace Azure.Core
         public bool TryGetProperty(string name, out object? value)
         {
             value = null;
-            return _properties?.TryGetValue(name, out value) == true;
+            if (_propertyBag.IsEmpty || !_propertyBag.TryGetValue((ulong)typeof(MessagePropertyKey).TypeHandle.Value, out var rawValue))
+            {
+                return false;
+            }
+            var properties = (Dictionary<string, object>)rawValue!;
+            return properties.TryGetValue(name, out value);
         }
 
         /// <summary>
@@ -112,10 +138,42 @@ namespace Azure.Core
         /// <param name="value">The property value.</param>
         public void SetProperty(string name, object value)
         {
-            _properties ??= new Dictionary<string, object>();
-
-            _properties[name] = value;
+            Dictionary<string, object> properties;
+            if (!_propertyBag.TryGetValue((ulong)typeof(MessagePropertyKey).TypeHandle.Value, out var rawValue))
+            {
+                properties = new Dictionary<string, object>();
+                _propertyBag.Set((ulong)typeof(MessagePropertyKey).TypeHandle.Value, properties);
+            }
+            else
+            {
+                properties = (Dictionary<string, object>)rawValue!;
+            }
+            properties[name] = value;
         }
+
+        /// <summary>
+        /// Gets a property that is stored with this <see cref="HttpMessage"/> instance and can be used for modifying pipeline behavior.
+        /// </summary>
+        /// <param name="type">The property type.</param>
+        /// <param name="value">The property value.</param>
+        /// <remarks>
+        /// The key value is of type <c>Type</c> for a couple of reasons. Primarily, it allows values to be stored such that though the accessor methods
+        /// are public, storing values keyed by internal types make them inaccessible to other assemblies. This protects internal values from being overwritten
+        /// by external code. See the <see cref="TelemetryDetails"/> and <see cref="UserAgentValueKey"/> types for an example of this usage. Secondly, <c>Type</c>
+        /// comparisons are faster than string comparisons.
+        /// </remarks>
+        /// <returns><c>true</c> if property exists, otherwise. <c>false</c>.</returns>
+        public bool TryGetProperty(Type type, out object? value) =>
+            _propertyBag.TryGetValue((ulong)type.TypeHandle.Value, out value);
+
+        /// <summary>
+        /// Sets a property that is stored with this <see cref="HttpMessage"/> instance and can be used for modifying pipeline behavior.
+        /// Internal properties can be keyed with internal types to prevent external code from overwriting these values.
+        /// </summary>
+        /// <param name="type">The key for the value.</param>
+        /// <param name="value">The property value.</param>
+        public void SetProperty(Type type, object value) =>
+            _propertyBag.Set((ulong)type.TypeHandle.Value, value);
 
         /// <summary>
         /// Returns the response content stream and releases it ownership to the caller. After calling this methods using <see cref="Azure.Response.ContentStream"/> or <see cref="Azure.Response.Content"/> would result in exception.
@@ -142,6 +200,7 @@ namespace Azure.Core
         {
             Request?.Dispose();
             _response?.Dispose();
+            _propertyBag.Dispose();
         }
 
         private class ResponseShouldNotBeUsedStream : Stream
@@ -194,5 +253,10 @@ namespace Azure.Core
                 set => throw CreateException();
             }
         }
+
+        /// <summary>
+        /// Exists as a private key entry into the <see cref="_propertyBag"/> dictionary for stashing string keyed entries in the Type keyed dictionary.
+        /// </summary>
+        private class MessagePropertyKey { }
     }
 }

@@ -17,13 +17,18 @@ namespace Azure.ResourceManager.Compute.Models
             writer.WriteStartObject();
             if (Optional.IsDefined(Enabled))
             {
-                writer.WritePropertyName("enabled");
+                writer.WritePropertyName("enabled"u8);
                 writer.WriteBooleanValue(Enabled.Value);
             }
             if (Optional.IsDefined(GracePeriod))
             {
-                writer.WritePropertyName("gracePeriod");
+                writer.WritePropertyName("gracePeriod"u8);
                 writer.WriteStringValue(GracePeriod);
+            }
+            if (Optional.IsDefined(RepairAction))
+            {
+                writer.WritePropertyName("repairAction"u8);
+                writer.WriteStringValue(RepairAction.Value.ToString());
             }
             writer.WriteEndObject();
         }
@@ -32,9 +37,10 @@ namespace Azure.ResourceManager.Compute.Models
         {
             Optional<bool> enabled = default;
             Optional<string> gracePeriod = default;
+            Optional<RepairAction> repairAction = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("enabled"))
+                if (property.NameEquals("enabled"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -44,13 +50,23 @@ namespace Azure.ResourceManager.Compute.Models
                     enabled = property.Value.GetBoolean();
                     continue;
                 }
-                if (property.NameEquals("gracePeriod"))
+                if (property.NameEquals("gracePeriod"u8))
                 {
                     gracePeriod = property.Value.GetString();
                     continue;
                 }
+                if (property.NameEquals("repairAction"u8))
+                {
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        property.ThrowNonNullablePropertyIsNull();
+                        continue;
+                    }
+                    repairAction = new RepairAction(property.Value.GetString());
+                    continue;
+                }
             }
-            return new AutomaticRepairsPolicy(Optional.ToNullable(enabled), gracePeriod.Value);
+            return new AutomaticRepairsPolicy(Optional.ToNullable(enabled), gracePeriod.Value, Optional.ToNullable(repairAction));
         }
     }
 }

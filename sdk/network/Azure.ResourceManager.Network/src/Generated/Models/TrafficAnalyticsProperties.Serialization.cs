@@ -10,15 +10,15 @@ using Azure.Core;
 
 namespace Azure.ResourceManager.Network.Models
 {
-    public partial class TrafficAnalyticsProperties : IUtf8JsonSerializable
+    internal partial class TrafficAnalyticsProperties : IUtf8JsonSerializable
     {
         void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
-            if (Optional.IsDefined(NetworkWatcherFlowAnalyticsConfiguration))
+            if (Optional.IsDefined(TrafficAnalyticsConfiguration))
             {
-                writer.WritePropertyName("networkWatcherFlowAnalyticsConfiguration");
-                writer.WriteObjectValue(NetworkWatcherFlowAnalyticsConfiguration);
+                writer.WritePropertyName("networkWatcherFlowAnalyticsConfiguration"u8);
+                writer.WriteObjectValue(TrafficAnalyticsConfiguration);
             }
             writer.WriteEndObject();
         }
@@ -28,7 +28,7 @@ namespace Azure.ResourceManager.Network.Models
             Optional<TrafficAnalyticsConfigurationProperties> networkWatcherFlowAnalyticsConfiguration = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("networkWatcherFlowAnalyticsConfiguration"))
+                if (property.NameEquals("networkWatcherFlowAnalyticsConfiguration"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {

@@ -10,14 +10,14 @@ using Azure.Core;
 
 namespace Azure.ResourceManager.CosmosDB.Models
 {
-    public partial class AutoscaleSettings : IUtf8JsonSerializable
+    internal partial class AutoscaleSettings : IUtf8JsonSerializable
     {
         void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
             if (Optional.IsDefined(MaxThroughput))
             {
-                writer.WritePropertyName("maxThroughput");
+                writer.WritePropertyName("maxThroughput"u8);
                 writer.WriteNumberValue(MaxThroughput.Value);
             }
             writer.WriteEndObject();
@@ -28,7 +28,7 @@ namespace Azure.ResourceManager.CosmosDB.Models
             Optional<int> maxThroughput = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("maxThroughput"))
+                if (property.NameEquals("maxThroughput"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {

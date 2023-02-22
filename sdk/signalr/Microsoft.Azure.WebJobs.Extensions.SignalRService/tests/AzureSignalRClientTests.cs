@@ -13,6 +13,7 @@ using Microsoft.Azure.SignalR.Tests.Common;
 using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using SignalRServiceExtension.Tests.Utils;
 using Xunit;
@@ -38,7 +39,7 @@ namespace SignalRServiceExtension.Tests
             var connectionStringKey = Constants.AzureSignalRConnectionStringName;
             var configDict = new Dictionary<string, string>() { { Constants.ServiceTransportTypeName, "Transient" }, { connectionStringKey, connectionString } };
             var configuration = new ConfigurationBuilder().AddInMemoryCollection(configDict).Build();
-            var serviceManagerStore = new ServiceManagerStore(configuration, NullLoggerFactory.Instance, SingletonAzureComponentFactory.Instance, new TestRouter());
+            var serviceManagerStore = new ServiceManagerStore(configuration, NullLoggerFactory.Instance, SingletonAzureComponentFactory.Instance, Options.Create(new SignalROptions()), new TestRouter());
             var azureSignalRClient = await SignalRUtils.GetAzureSignalRClientAsync(connectionStringKey, hubName, serviceManagerStore);
             var connectionInfo = await azureSignalRClient.GetClientConnectionInfoAsync(userId, idToken, claimTypeList, null);
 
@@ -52,7 +53,7 @@ namespace SignalRServiceExtension.Tests
         [Fact]
         public async Task ServiceEndpointsNotSet()
         {
-            var rootHubContextMock = new Mock<ServiceHubContext>().As<IInternalServiceHubContext>();
+            var rootHubContextMock = new Mock<ServiceHubContext>();
             var childHubContextMock = new Mock<ServiceHubContext>();
             rootHubContextMock.Setup(c => c.WithEndpoints(It.IsAny<ServiceEndpoint[]>())).Returns(childHubContextMock.Object);
             rootHubContextMock.Setup(c => c.Clients.All.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
@@ -72,7 +73,7 @@ namespace SignalRServiceExtension.Tests
         [Fact]
         public async Task ServiceEndpointsSet()
         {
-            var rootHubContextMock = new Mock<ServiceHubContext>().As<IInternalServiceHubContext>();
+            var rootHubContextMock = new Mock<ServiceHubContext>();
             var childHubContextMock = new Mock<ServiceHubContext>();
             rootHubContextMock.Setup(c => c.WithEndpoints(It.IsAny<ServiceEndpoint[]>())).Returns(childHubContextMock.Object);
             childHubContextMock.Setup(c => c.Clients.All.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);

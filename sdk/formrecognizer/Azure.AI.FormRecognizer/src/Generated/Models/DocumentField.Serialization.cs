@@ -22,29 +22,31 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
             Optional<TimeSpan> valueTime = default;
             Optional<string> valuePhoneNumber = default;
             Optional<double> valueNumber = default;
-            Optional<int> valueInteger = default;
+            Optional<long> valueInteger = default;
             Optional<V3SelectionMarkState> valueSelectionMark = default;
             Optional<DocumentSignatureType> valueSignature = default;
             Optional<string> valueCountryRegion = default;
             Optional<IReadOnlyList<DocumentField>> valueArray = default;
             Optional<IReadOnlyDictionary<string, DocumentField>> valueObject = default;
+            Optional<CurrencyValue> valueCurrency = default;
+            Optional<AddressValue> valueAddress = default;
             Optional<string> content = default;
             Optional<IReadOnlyList<BoundingRegion>> boundingRegions = default;
             Optional<IReadOnlyList<DocumentSpan>> spans = default;
             Optional<float> confidence = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("type"))
+                if (property.NameEquals("type"u8))
                 {
                     type = property.Value.GetString().ToDocumentFieldType();
                     continue;
                 }
-                if (property.NameEquals("valueString"))
+                if (property.NameEquals("valueString"u8))
                 {
                     valueString = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("valueDate"))
+                if (property.NameEquals("valueDate"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -54,7 +56,7 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                     valueDate = property.Value.GetDateTimeOffset("D");
                     continue;
                 }
-                if (property.NameEquals("valueTime"))
+                if (property.NameEquals("valueTime"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -64,12 +66,12 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                     valueTime = property.Value.GetTimeSpan("T");
                     continue;
                 }
-                if (property.NameEquals("valuePhoneNumber"))
+                if (property.NameEquals("valuePhoneNumber"u8))
                 {
                     valuePhoneNumber = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("valueNumber"))
+                if (property.NameEquals("valueNumber"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -79,17 +81,17 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                     valueNumber = property.Value.GetDouble();
                     continue;
                 }
-                if (property.NameEquals("valueInteger"))
+                if (property.NameEquals("valueInteger"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    valueInteger = property.Value.GetInt32();
+                    valueInteger = property.Value.GetInt64();
                     continue;
                 }
-                if (property.NameEquals("valueSelectionMark"))
+                if (property.NameEquals("valueSelectionMark"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -99,7 +101,7 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                     valueSelectionMark = new V3SelectionMarkState(property.Value.GetString());
                     continue;
                 }
-                if (property.NameEquals("valueSignature"))
+                if (property.NameEquals("valueSignature"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -109,12 +111,12 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                     valueSignature = new DocumentSignatureType(property.Value.GetString());
                     continue;
                 }
-                if (property.NameEquals("valueCountryRegion"))
+                if (property.NameEquals("valueCountryRegion"u8))
                 {
                     valueCountryRegion = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("valueArray"))
+                if (property.NameEquals("valueArray"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -129,7 +131,7 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                     valueArray = array;
                     continue;
                 }
-                if (property.NameEquals("valueObject"))
+                if (property.NameEquals("valueObject"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -144,12 +146,32 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                     valueObject = dictionary;
                     continue;
                 }
-                if (property.NameEquals("content"))
+                if (property.NameEquals("valueCurrency"u8))
+                {
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        property.ThrowNonNullablePropertyIsNull();
+                        continue;
+                    }
+                    valueCurrency = CurrencyValue.DeserializeCurrencyValue(property.Value);
+                    continue;
+                }
+                if (property.NameEquals("valueAddress"u8))
+                {
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        property.ThrowNonNullablePropertyIsNull();
+                        continue;
+                    }
+                    valueAddress = AddressValue.DeserializeAddressValue(property.Value);
+                    continue;
+                }
+                if (property.NameEquals("content"u8))
                 {
                     content = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("boundingRegions"))
+                if (property.NameEquals("boundingRegions"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -164,7 +186,7 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                     boundingRegions = array;
                     continue;
                 }
-                if (property.NameEquals("spans"))
+                if (property.NameEquals("spans"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -179,7 +201,7 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                     spans = array;
                     continue;
                 }
-                if (property.NameEquals("confidence"))
+                if (property.NameEquals("confidence"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -190,7 +212,7 @@ namespace Azure.AI.FormRecognizer.DocumentAnalysis
                     continue;
                 }
             }
-            return new DocumentField(type, valueString.Value, Optional.ToNullable(valueDate), Optional.ToNullable(valueTime), valuePhoneNumber.Value, Optional.ToNullable(valueNumber), Optional.ToNullable(valueInteger), Optional.ToNullable(valueSelectionMark), Optional.ToNullable(valueSignature), valueCountryRegion.Value, Optional.ToList(valueArray), Optional.ToDictionary(valueObject), content.Value, Optional.ToList(boundingRegions), Optional.ToList(spans), Optional.ToNullable(confidence));
+            return new DocumentField(type, valueString.Value, Optional.ToNullable(valueDate), Optional.ToNullable(valueTime), valuePhoneNumber.Value, Optional.ToNullable(valueNumber), Optional.ToNullable(valueInteger), Optional.ToNullable(valueSelectionMark), Optional.ToNullable(valueSignature), valueCountryRegion.Value, Optional.ToList(valueArray), Optional.ToDictionary(valueObject), Optional.ToNullable(valueCurrency), valueAddress.Value, content.Value, Optional.ToList(boundingRegions), Optional.ToList(spans), Optional.ToNullable(confidence));
         }
     }
 }

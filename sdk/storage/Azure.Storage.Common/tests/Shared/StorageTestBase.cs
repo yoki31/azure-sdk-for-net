@@ -16,6 +16,7 @@ using Azure.Storage.Sas;
 using Azure.Storage.Tests.Shared;
 using Microsoft.Identity.Client;
 using NUnit.Framework;
+using Azure.Core.TestFramework.Models;
 
 #pragma warning disable SA1402 // File may only contain a single type
 
@@ -33,11 +34,56 @@ namespace Azure.Storage.Test.Shared
             ThreadPool.SetMinThreads(100, 100);
         }
 
+        private const string SignatureQueryName = "sig";
+        private const string CopySourceName = "x-ms-copy-source";
+        private const string RenameSource = "x-ms-rename-source";
+        private const string CopySourceAuthorization = "x-ms-copy-source-authorization";
+        private const string PreviousSnapshotUrl = "x-ms-previous-snapshot-url";
+        private const string FileRenameSource = "x-ms-file-rename-source";
+
         public StorageTestBase(bool async, RecordedTestMode? mode = null)
             : base(async, mode)
         {
-            Sanitizer = new StorageRecordedTestSanitizer();
+            SanitizedQueryParameters.Add(SignatureQueryName);
+
+#if NETFRAMEWORK
+            // Uri uses different escaping for some special characters between .NET Framework and Core. Because the Test Proxy runs on .NET
+            // Core, we need to normalize to the .NET Core escaping when matching and storing the recordings when running tests on NetFramework.
+            UriRegexSanitizers.Add(new UriRegexSanitizer("\\(", "%28"));
+            UriRegexSanitizers.Add(new UriRegexSanitizer("\\)", "%29"));
+            UriRegexSanitizers.Add(new UriRegexSanitizer("\\!", "%21"));
+            UriRegexSanitizers.Add(new UriRegexSanitizer("\\'", "%27"));
+            UriRegexSanitizers.Add(new UriRegexSanitizer("\\*", "%2A"));
+            // Encode any colons in the Uri except for the one in the scheme
+            UriRegexSanitizers.Add(new UriRegexSanitizer("(?<group>:)[^//]", "%3A") {GroupForReplace = "group"});
+#endif
+
+            HeaderRegexSanitizers.Add(new HeaderRegexSanitizer("x-ms-encryption-key", SanitizeValue));
+            HeaderRegexSanitizers.Add(new HeaderRegexSanitizer(CopySourceAuthorization, SanitizeValue));
+
+            SanitizedQueryParametersInHeaders.Add((CopySourceName, SignatureQueryName));
+            SanitizedQueryParametersInHeaders.Add((RenameSource, SignatureQueryName));
+            SanitizedQueryParametersInHeaders.Add((PreviousSnapshotUrl, SignatureQueryName));
+            SanitizedQueryParametersInHeaders.Add((FileRenameSource, SignatureQueryName));
+
+            BodyRegexSanitizers.Add(new BodyRegexSanitizer(@"client_secret=(?<group>.*?)(?=&|$)", SanitizeValue)
+            {
+                GroupForReplace = "group"
+            });
+
             Tenants = new TenantConfigurationBuilder(this);
+        }
+
+        public string SanitizeUri(string uri)
+        {
+            var builder = new UriBuilder(uri);
+            var query = new UriQueryParamsCollection(builder.Query);
+            if (query.ContainsKey(SignatureQueryName))
+            {
+                query[SignatureQueryName] = SanitizeValue;
+                builder.Query = query.ToString();
+            }
+            return builder.Uri.AbsoluteUri;
         }
 
         /// <summary>
@@ -361,6 +407,29 @@ namespace Azure.Storage.Test.Shared
             AcquireTokenForClientParameterBuilder result = application.AcquireTokenForClient(scopes);
             AuthenticationResult authenticationResult = await result.ExecuteAsync();
             return authenticationResult.AccessToken;
+        }
+
+        public string CreateRandomDirectory(string parentPath, string directoryName = default)
+        {
+            return Directory.CreateDirectory(Path.Combine(parentPath, string.IsNullOrEmpty(directoryName) ? Recording.Random.NewGuid().ToString() : directoryName)).FullName;
+        }
+
+        public async Task<string> CreateRandomFileAsync(string parentPath, string fileName = default, long size = 0)
+        {
+            using (FileStream fs = File.OpenWrite(Path.Combine(parentPath, string.IsNullOrEmpty(fileName) ? Recording.Random.NewGuid().ToString() : fileName)))
+            {
+                int bufferSize = Constants.MB;
+                byte[] data = new byte[bufferSize];
+                while (fs.Position + bufferSize < size)
+                {
+                    await fs.WriteAsync(GetRandomBuffer(bufferSize), 0, bufferSize);
+                }
+                if (fs.Position < size)
+                {
+                    await fs.WriteAsync(GetRandomBuffer(size - fs.Position), 0, (int)(size - fs.Position));
+                }
+                return fs.Name;
+            }
         }
     }
 }

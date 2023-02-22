@@ -8,6 +8,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using Azure.Core;
+using Azure.ResourceManager.Sql;
 
 namespace Azure.ResourceManager.Sql.Models
 {
@@ -15,26 +16,26 @@ namespace Azure.ResourceManager.Sql.Models
     {
         internal static JobAgentListResult DeserializeJobAgentListResult(JsonElement element)
         {
-            Optional<IReadOnlyList<JobAgent>> value = default;
+            Optional<IReadOnlyList<SqlServerJobAgentData>> value = default;
             Optional<string> nextLink = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("value"))
+                if (property.NameEquals("value"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    List<JobAgent> array = new List<JobAgent>();
+                    List<SqlServerJobAgentData> array = new List<SqlServerJobAgentData>();
                     foreach (var item in property.Value.EnumerateArray())
                     {
-                        array.Add(JobAgent.DeserializeJobAgent(item));
+                        array.Add(SqlServerJobAgentData.DeserializeSqlServerJobAgentData(item));
                     }
                     value = array;
                     continue;
                 }
-                if (property.NameEquals("nextLink"))
+                if (property.NameEquals("nextLink"u8))
                 {
                     nextLink = property.Value.GetString();
                     continue;

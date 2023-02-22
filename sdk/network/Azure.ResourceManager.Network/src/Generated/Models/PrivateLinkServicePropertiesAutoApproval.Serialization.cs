@@ -11,14 +11,14 @@ using Azure.Core;
 
 namespace Azure.ResourceManager.Network.Models
 {
-    public partial class PrivateLinkServicePropertiesAutoApproval : IUtf8JsonSerializable
+    internal partial class PrivateLinkServicePropertiesAutoApproval : IUtf8JsonSerializable
     {
         void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
             if (Optional.IsCollectionDefined(Subscriptions))
             {
-                writer.WritePropertyName("subscriptions");
+                writer.WritePropertyName("subscriptions"u8);
                 writer.WriteStartArray();
                 foreach (var item in Subscriptions)
                 {
@@ -34,7 +34,7 @@ namespace Azure.ResourceManager.Network.Models
             Optional<IList<string>> subscriptions = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("subscriptions"))
+                if (property.NameEquals("subscriptions"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {

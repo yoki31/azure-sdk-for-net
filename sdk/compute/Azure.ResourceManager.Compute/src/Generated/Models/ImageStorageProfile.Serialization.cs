@@ -16,14 +16,14 @@ namespace Azure.ResourceManager.Compute.Models
         void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
-            if (Optional.IsDefined(OsDisk))
+            if (Optional.IsDefined(OSDisk))
             {
-                writer.WritePropertyName("osDisk");
-                writer.WriteObjectValue(OsDisk);
+                writer.WritePropertyName("osDisk"u8);
+                writer.WriteObjectValue(OSDisk);
             }
             if (Optional.IsCollectionDefined(DataDisks))
             {
-                writer.WritePropertyName("dataDisks");
+                writer.WritePropertyName("dataDisks"u8);
                 writer.WriteStartArray();
                 foreach (var item in DataDisks)
                 {
@@ -33,7 +33,7 @@ namespace Azure.ResourceManager.Compute.Models
             }
             if (Optional.IsDefined(ZoneResilient))
             {
-                writer.WritePropertyName("zoneResilient");
+                writer.WritePropertyName("zoneResilient"u8);
                 writer.WriteBooleanValue(ZoneResilient.Value);
             }
             writer.WriteEndObject();
@@ -46,7 +46,7 @@ namespace Azure.ResourceManager.Compute.Models
             Optional<bool> zoneResilient = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("osDisk"))
+                if (property.NameEquals("osDisk"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -56,7 +56,7 @@ namespace Azure.ResourceManager.Compute.Models
                     osDisk = ImageOSDisk.DeserializeImageOSDisk(property.Value);
                     continue;
                 }
-                if (property.NameEquals("dataDisks"))
+                if (property.NameEquals("dataDisks"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -71,7 +71,7 @@ namespace Azure.ResourceManager.Compute.Models
                     dataDisks = array;
                     continue;
                 }
-                if (property.NameEquals("zoneResilient"))
+                if (property.NameEquals("zoneResilient"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {

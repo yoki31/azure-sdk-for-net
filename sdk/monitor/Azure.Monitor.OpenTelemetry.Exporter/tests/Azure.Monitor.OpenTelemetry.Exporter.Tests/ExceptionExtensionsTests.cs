@@ -4,9 +4,12 @@
 using System;
 using System.Globalization;
 using System.Threading;
+
+using Azure.Monitor.OpenTelemetry.Exporter.Internals;
+
 using Xunit;
 
-namespace Azure.Monitor.OpenTelemetry.Exporter
+namespace Azure.Monitor.OpenTelemetry.Exporter.Tests
 {
     public class ExceptionExtensionsTests
     {
@@ -15,7 +18,7 @@ namespace Azure.Monitor.OpenTelemetry.Exporter
         [Fact]
         public void ExtractsStackTraceWithInvariantCultureMatchesErrorsReportedByOSsWithDifferentLanguages()
         {
-            CultureInfo stackTraceCulture = null;
+            CultureInfo? stackTraceCulture = null;
             var exception = new StubException();
             exception.OnToString = () =>
             {

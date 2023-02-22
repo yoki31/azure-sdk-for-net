@@ -74,7 +74,7 @@ namespace Azure.Containers.ContainerRegistry
 
             if (options.Audience == null)
             {
-                throw new InvalidOperationException("ContainerRegistryClientOptions.Audience property must be set to initialize ContainerRegistryClient.");
+                throw new InvalidOperationException($"{nameof(ContainerRegistryClientOptions.Audience)} property must be set to initialize a {nameof(ContainerRegistryClient)}.");
             }
 
             _endpoint = endpoint;
@@ -98,6 +98,11 @@ namespace Azure.Containers.ContainerRegistry
         /// Gets the registry service endpoint for this client.
         /// </summary>
         public virtual Uri Endpoint => _endpoint;
+
+        /// <summary>
+        /// The HttpPipeline.
+        /// </summary>
+        public virtual HttpPipeline Pipeline => _pipeline;
 
         /// <summary> List the names of the repositories in this registry. </summary>
         /// <param name="cancellationToken"> The cancellation token to use. </param>

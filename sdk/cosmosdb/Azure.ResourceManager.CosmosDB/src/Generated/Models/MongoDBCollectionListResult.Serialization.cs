@@ -8,6 +8,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using Azure.Core;
+using Azure.ResourceManager.CosmosDB;
 
 namespace Azure.ResourceManager.CosmosDB.Models
 {
@@ -15,20 +16,20 @@ namespace Azure.ResourceManager.CosmosDB.Models
     {
         internal static MongoDBCollectionListResult DeserializeMongoDBCollectionListResult(JsonElement element)
         {
-            Optional<IReadOnlyList<MongoDBCollectionGetResults>> value = default;
+            Optional<IReadOnlyList<MongoDBCollectionData>> value = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("value"))
+                if (property.NameEquals("value"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    List<MongoDBCollectionGetResults> array = new List<MongoDBCollectionGetResults>();
+                    List<MongoDBCollectionData> array = new List<MongoDBCollectionData>();
                     foreach (var item in property.Value.EnumerateArray())
                     {
-                        array.Add(MongoDBCollectionGetResults.DeserializeMongoDBCollectionGetResults(item));
+                        array.Add(MongoDBCollectionData.DeserializeMongoDBCollectionData(item));
                     }
                     value = array;
                     continue;

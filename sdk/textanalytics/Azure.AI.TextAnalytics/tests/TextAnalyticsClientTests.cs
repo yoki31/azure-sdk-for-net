@@ -6,15 +6,17 @@ using System.Collections.Generic;
 using Azure.Core;
 using Azure.Core.TestFramework;
 using Azure.Identity;
+using Moq;
 using NUnit.Framework;
 
 namespace Azure.AI.TextAnalytics.Tests
 {
     public class TextAnalyticsClientTests : ClientTestBase
     {
-        public TextAnalyticsClientTests(bool isAsync) : base(isAsync)
+        public TextAnalyticsClientTests(bool isAsync)
+            : base(isAsync)
         {
-            TextAnalyticsClientOptions options = new TextAnalyticsClientOptions
+            TextAnalyticsClientOptions options = new TextAnalyticsClientOptions()
             {
                 Transport = new MockTransport(),
             };
@@ -33,6 +35,30 @@ namespace Azure.AI.TextAnalytics.Tests
             Assert.Throws<ArgumentNullException>(() => new TextAnalyticsClient(uri, (AzureKeyCredential)null));
             Assert.Throws<ArgumentNullException>(() => new TextAnalyticsClient(uri, (TokenCredential)null));
             Assert.Throws<ArgumentNullException>(() => new TextAnalyticsClient(null, new DefaultAzureCredential()));
+        }
+
+        [Test]
+        [TestCase(null)]
+        [TestCase("")]
+        public void CreateClientAllowsMissingDefaultLanguage(string defaultLanguage)
+        {
+            var uri = new Uri("http://localhost");
+            var options = new TextAnalyticsClientOptions { DefaultLanguage = defaultLanguage };
+
+            Assert.DoesNotThrow(() => new TextAnalyticsClient(uri, new AzureKeyCredential("apiKey"), options));
+            Assert.DoesNotThrow(() => new TextAnalyticsClient(uri, Mock.Of<TokenCredential>(), options));
+        }
+
+        [Test]
+        [TestCase(null)]
+        [TestCase("")]
+        public void CreateClientAllowsMissingDefaultCountryHint(string defaultCountryHint)
+        {
+            var uri = new Uri("http://localhost");
+            var options = new TextAnalyticsClientOptions { DefaultCountryHint = defaultCountryHint };
+
+            Assert.DoesNotThrow(() => new TextAnalyticsClient(uri, new AzureKeyCredential("apiKey"), options));
+            Assert.DoesNotThrow(() => new TextAnalyticsClient(uri, Mock.Of<TokenCredential>(), options));
         }
 
         [Test]
@@ -119,6 +145,54 @@ namespace Azure.AI.TextAnalytics.Tests
             Assert.ThrowsAsync<ArgumentNullException>(() => Client.RecognizeLinkedEntitiesBatchAsync(null, new TextAnalyticsRequestOptions()));
             Assert.ThrowsAsync<ArgumentNullException>(() => Client.RecognizeLinkedEntitiesBatchAsync((string[])null, options: new TextAnalyticsRequestOptions()));
             Assert.ThrowsAsync<ArgumentNullException>(() => Client.RecognizeLinkedEntitiesBatchAsync(null, null, new TextAnalyticsRequestOptions()));
+        }
+
+        [Test]
+        public void DynamicClassifyArgumentValidation()
+        {
+            string document1 = "The WHO is issuing a warning about Monkey Pox.";
+            string document2 = "Mo Salah plays in Liverpool FC in England.";
+            List<string> batchConvenienceDocuments = new() { document1, document2 };
+            List<TextDocumentInput> batchDocuments = new() {
+                new TextDocumentInput("1", document1),
+                new TextDocumentInput("2", document2)
+            };
+            List<string> categories = new() { "Health", "Politics", "Music", "Sports" };
+
+            Assert.ThrowsAsync<ArgumentNullException>(() => Client.DynamicClassifyAsync(null, categories));
+            Assert.ThrowsAsync<ArgumentException>(() => Client.DynamicClassifyAsync(string.Empty, categories));
+            Assert.ThrowsAsync<ArgumentNullException>(() => Client.DynamicClassifyAsync(document1, null));
+            Assert.ThrowsAsync<ArgumentException>(() => Client.DynamicClassifyAsync(document1, Array.Empty<string>()));
+
+            Assert.ThrowsAsync<ArgumentNullException>(() => Client.DynamicClassifyBatchAsync((string[])null, categories));
+            Assert.ThrowsAsync<ArgumentException>(() => Client.DynamicClassifyBatchAsync(Array.Empty<string>(), categories));
+            Assert.ThrowsAsync<ArgumentNullException>(() => Client.DynamicClassifyBatchAsync(batchConvenienceDocuments, null));
+            Assert.ThrowsAsync<ArgumentException>(() => Client.DynamicClassifyBatchAsync(batchConvenienceDocuments, Array.Empty<string>()));
+
+            Assert.ThrowsAsync<ArgumentNullException>(() => Client.DynamicClassifyBatchAsync((TextDocumentInput[])null, categories));
+            Assert.ThrowsAsync<ArgumentException>(() => Client.DynamicClassifyBatchAsync(Array.Empty<TextDocumentInput>(), categories));
+            Assert.ThrowsAsync<ArgumentNullException>(() => Client.DynamicClassifyBatchAsync(batchDocuments, null));
+            Assert.ThrowsAsync<ArgumentException>(() => Client.DynamicClassifyBatchAsync(batchDocuments, Array.Empty<string>()));
+        }
+
+        [Test]
+        public void ExtractiveSummarizeArgumentValidation()
+        {
+            Assert.ThrowsAsync<ArgumentNullException>(() => Client.StartExtractiveSummarizeAsync((string[])null));
+            Assert.ThrowsAsync<ArgumentException>(() => Client.StartExtractiveSummarizeAsync(Array.Empty<string>()));
+
+            Assert.ThrowsAsync<ArgumentNullException>(() => Client.StartExtractiveSummarizeAsync((TextDocumentInput[])null));
+            Assert.ThrowsAsync<ArgumentException>(() => Client.StartExtractiveSummarizeAsync(Array.Empty<TextDocumentInput>()));
+        }
+
+        [Test]
+        public void AbstractiveSummarizeArgumentValidation()
+        {
+            Assert.ThrowsAsync<ArgumentNullException>(() => Client.StartAbstractiveSummarizeAsync((string[])null));
+            Assert.ThrowsAsync<ArgumentException>(() => Client.StartAbstractiveSummarizeAsync(Array.Empty<string>()));
+
+            Assert.ThrowsAsync<ArgumentNullException>(() => Client.StartAbstractiveSummarizeAsync((TextDocumentInput[])null));
+            Assert.ThrowsAsync<ArgumentException>(() => Client.StartAbstractiveSummarizeAsync(Array.Empty<TextDocumentInput>()));
         }
     }
 }

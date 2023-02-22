@@ -15,15 +15,15 @@ namespace Azure.ResourceManager.Compute.Models
         void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
-            if (Optional.IsDefined(SecureBootEnabled))
+            if (Optional.IsDefined(IsSecureBootEnabled))
             {
-                writer.WritePropertyName("secureBootEnabled");
-                writer.WriteBooleanValue(SecureBootEnabled.Value);
+                writer.WritePropertyName("secureBootEnabled"u8);
+                writer.WriteBooleanValue(IsSecureBootEnabled.Value);
             }
-            if (Optional.IsDefined(VTpmEnabled))
+            if (Optional.IsDefined(IsVirtualTpmEnabled))
             {
-                writer.WritePropertyName("vTpmEnabled");
-                writer.WriteBooleanValue(VTpmEnabled.Value);
+                writer.WritePropertyName("vTpmEnabled"u8);
+                writer.WriteBooleanValue(IsVirtualTpmEnabled.Value);
             }
             writer.WriteEndObject();
         }
@@ -34,7 +34,7 @@ namespace Azure.ResourceManager.Compute.Models
             Optional<bool> vTpmEnabled = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("secureBootEnabled"))
+                if (property.NameEquals("secureBootEnabled"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -44,7 +44,7 @@ namespace Azure.ResourceManager.Compute.Models
                     secureBootEnabled = property.Value.GetBoolean();
                     continue;
                 }
-                if (property.NameEquals("vTpmEnabled"))
+                if (property.NameEquals("vTpmEnabled"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {

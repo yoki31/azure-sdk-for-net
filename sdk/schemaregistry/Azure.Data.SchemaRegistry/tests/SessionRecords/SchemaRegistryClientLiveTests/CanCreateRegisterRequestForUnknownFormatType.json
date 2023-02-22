@@ -1,32 +1,39 @@
 {
   "Entries": [
     {
-      "RequestUri": "https://jolovschemaregistry.servicebus.windows.net/$schemaGroups/azsdk_net_test_group/schemas/test1?api-version=2021-10",
+      "RequestUri": "https://mreddingschemaregistry-avro.servicebus.windows.net/$schemaGroups/azsdk_net_test_group/schemas/test-25660?api-version=2022-10",
       "RequestMethod": "PUT",
       "RequestHeaders": {
         "Accept": "application/json",
         "Authorization": "Sanitized",
-        "Content-Length": "154",
-        "Content-Type": "application/json; serialization=JSON",
-        "User-Agent": "azsdk-net-Data.SchemaRegistry/1.0.0-alpha.20211109.1 (.NET Framework 4.8.4420.0; Microsoft Windows 10.0.22000 )",
-        "x-ms-client-request-id": "43b62a79a2719904c8757b53ff601f96",
+        "Content-Length": "5",
+        "Content-Type": "text/plain; charset=utf-8",
+        "User-Agent": "azsdk-net-Data.SchemaRegistry/1.4.0-alpha.20230111.1 (.NET 6.0.13; Microsoft Windows 10.0.22621)",
+        "x-ms-client-request-id": "86c89bf3c5b81fb57fb7fd47ffa79ba9",
         "x-ms-return-client-request-id": "true"
       },
-      "RequestBody": "{\u0022type\u0022 : \u0022record\u0022,\u0022namespace\u0022 : \u0022TestSchema\u0022,\u0022name\u0022 : \u0022Employee\u0022,\u0022fields\u0022 : [{ \u0022name\u0022 : \u0022Name\u0022 , \u0022type\u0022 : \u0022string\u0022 },{ \u0022name\u0022 : \u0022Age\u0022, \u0022type\u0022 : \u0022int\u0022 }]}",
-      "StatusCode": 415,
+      "RequestBody": "Hello",
+      "StatusCode": 403,
       "ResponseHeaders": {
         "Content-Type": "application/json",
-        "Date": "Wed, 10 Nov 2021 01:35:22 GMT",
+        "Date": "Thu, 12 Jan 2023 19:01:03 GMT",
         "Server": "Microsoft-HTTPAPI/2.0",
         "Strict-Transport-Security": "max-age=31536000",
-        "Transfer-Encoding": "chunked"
+        "Transfer-Encoding": "chunked",
+        "x-ms-error-code": "NotAvaliable"
       },
-      "ResponseBody": "{\u0022Code\u0022:415,\u0022Detail\u0022:\u0022Invalid schema type for PUT request. \u0027json\u0027 is not supported. TrackingId:332c4631-369c-48f4-a969-5eccd2dba37e_G3, SystemTracker:jolovschemaregistry.servicebus.windows.net:$schemaGroups\\/azsdk_net_test_group\\/schemas\\/test1, Timestamp:2021-11-10T01:35:22\u0022}"
+      "ResponseBody": {
+        "error": {
+          "code": "NotAvaliable",
+          "message": "SubCode=40301, Schema of type Custom cannot be created within group \u0027azsdk_net_test_group\u0027 that support Avro schema type. TrackingId:edf95913-b0a5-4139-98c2-f67e8e4916a1_G2, SystemTracker:NoSystemTracker, Timestamp:2023-01-12T19:01:03"
+        }
+      }
     }
   ],
   "Variables": {
-    "RandomSeed": "671178910",
-    "SCHEMAREGISTRY_ENDPOINT": "jolovschemaregistry.servicebus.windows.net",
+    "AZURE_AUTHORITY_HOST": "https://login.microsoftonline.com/",
+    "RandomSeed": "438239157",
+    "SCHEMAREGISTRY_ENDPOINT_AVRO": "mreddingschemaregistry-avro.servicebus.windows.net",
     "SCHEMAREGISTRY_GROUP": "azsdk_net_test_group"
   }
 }

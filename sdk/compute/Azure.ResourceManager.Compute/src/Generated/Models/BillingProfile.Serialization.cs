@@ -10,14 +10,14 @@ using Azure.Core;
 
 namespace Azure.ResourceManager.Compute.Models
 {
-    public partial class BillingProfile : IUtf8JsonSerializable
+    internal partial class BillingProfile : IUtf8JsonSerializable
     {
         void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
             if (Optional.IsDefined(MaxPrice))
             {
-                writer.WritePropertyName("maxPrice");
+                writer.WritePropertyName("maxPrice"u8);
                 writer.WriteNumberValue(MaxPrice.Value);
             }
             writer.WriteEndObject();
@@ -28,7 +28,7 @@ namespace Azure.ResourceManager.Compute.Models
             Optional<double> maxPrice = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("maxPrice"))
+                if (property.NameEquals("maxPrice"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {

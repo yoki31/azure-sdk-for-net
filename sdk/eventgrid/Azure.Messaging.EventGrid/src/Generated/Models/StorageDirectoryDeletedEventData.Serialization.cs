@@ -21,53 +21,48 @@ namespace Azure.Messaging.EventGrid.SystemEvents
             Optional<string> clientRequestId = default;
             Optional<string> requestId = default;
             Optional<string> url = default;
-            Optional<bool> recursive = default;
+            Optional<string> recursive = default;
             Optional<string> sequencer = default;
             Optional<string> identity = default;
             Optional<object> storageDiagnostics = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("api"))
+                if (property.NameEquals("api"u8))
                 {
                     api = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("clientRequestId"))
+                if (property.NameEquals("clientRequestId"u8))
                 {
                     clientRequestId = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("requestId"))
+                if (property.NameEquals("requestId"u8))
                 {
                     requestId = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("url"))
+                if (property.NameEquals("url"u8))
                 {
                     url = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("recursive"))
+                if (property.NameEquals("recursive"u8))
                 {
-                    if (property.Value.ValueKind == JsonValueKind.Null)
-                    {
-                        property.ThrowNonNullablePropertyIsNull();
-                        continue;
-                    }
-                    recursive = property.Value.GetBoolean();
+                    recursive = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("sequencer"))
+                if (property.NameEquals("sequencer"u8))
                 {
                     sequencer = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("identity"))
+                if (property.NameEquals("identity"u8))
                 {
                     identity = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("storageDiagnostics"))
+                if (property.NameEquals("storageDiagnostics"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -78,7 +73,7 @@ namespace Azure.Messaging.EventGrid.SystemEvents
                     continue;
                 }
             }
-            return new StorageDirectoryDeletedEventData(api.Value, clientRequestId.Value, requestId.Value, url.Value, Optional.ToNullable(recursive), sequencer.Value, identity.Value, storageDiagnostics.Value);
+            return new StorageDirectoryDeletedEventData(api.Value, clientRequestId.Value, requestId.Value, url.Value, recursive.Value, sequencer.Value, identity.Value, storageDiagnostics.Value);
         }
 
         internal partial class StorageDirectoryDeletedEventDataConverter : JsonConverter<StorageDirectoryDeletedEventData>

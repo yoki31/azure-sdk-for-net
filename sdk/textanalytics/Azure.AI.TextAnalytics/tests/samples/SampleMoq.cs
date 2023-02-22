@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Azure.Core.TestFramework;
 using Moq;
 using NUnit.Framework;
 
@@ -16,8 +15,8 @@ namespace Azure.AI.TextAnalytics.Samples
         public async Task DetectLanguageAsync()
         {
             #region Snippet:CreateMocks
-            var mockResponse = new Mock<Response>();
-            var mockClient = new Mock<TextAnalyticsClient>();
+            Mock<Response> mockResponse = new();
+            Mock<TextAnalyticsClient> mockClient = new();
             #endregion
 
             #region Snippet:SetupMocks
@@ -45,15 +44,15 @@ namespace Azure.AI.TextAnalytics.Samples
         [Test]
         public async Task DetectLanguageBatchAsync()
         {
-            var mockResponse = new Mock<Response>();
-            var mockClient = new Mock<TextAnalyticsClient>();
-            var documents = new List<string>
+            Mock<Response> mockResponse = new();
+            Mock<TextAnalyticsClient> mockClient = new();
+            List<string> documents = new()
             {
                 "Hello world",
                 "Bonjour tout le monde",
             };
 
-            var languages = new List<DetectLanguageResult>
+            List<DetectLanguageResult> languages = new()
             {
                 TextAnalyticsModelFactory.DetectLanguageResult("0", default, TextAnalyticsModelFactory.DetectedLanguage("English", "en", 1.00)),
                 TextAnalyticsModelFactory.DetectLanguageResult("1", default, TextAnalyticsModelFactory.DetectedLanguage("French", "fr", 1.00)),
@@ -81,9 +80,9 @@ namespace Azure.AI.TextAnalytics.Samples
         [Test]
         public async Task DetectLanguageBatchWithStatisticsAsync()
         {
-            var mockResponse = new Mock<Response>();
-            var mockClient = new Mock<TextAnalyticsClient>();
-            var documents = new List<string>
+            Mock<Response> mockResponse = new();
+            Mock<TextAnalyticsClient> mockClient = new();
+            List<string> documents = new()
             {
                 "Hello world",
                 "Bonjour tout le monde",
@@ -92,7 +91,7 @@ namespace Azure.AI.TextAnalytics.Samples
             TextDocumentStatistics language1Stats = TextAnalyticsModelFactory.TextDocumentStatistics(11, 1);
             TextDocumentStatistics language2Stats = TextAnalyticsModelFactory.TextDocumentStatistics(21, 1);
 
-            var languages = new List<DetectLanguageResult>
+            List<DetectLanguageResult> languages = new()
             {
                 TextAnalyticsModelFactory.DetectLanguageResult("0", language1Stats, default),
                 TextAnalyticsModelFactory.DetectLanguageResult("1", language2Stats, default),
@@ -128,9 +127,9 @@ namespace Azure.AI.TextAnalytics.Samples
         [Test]
         public async Task DetectLanguageBatchWithErrorAsync()
         {
-            var mockResponse = new Mock<Response>();
-            var mockClient = new Mock<TextAnalyticsClient>();
-            var documents = new List<string>
+            Mock<Response> mockResponse = new();
+            Mock<TextAnalyticsClient> mockClient = new();
+            List<string> documents = new()
             {
                 "Hello world",
                 "",
@@ -138,7 +137,7 @@ namespace Azure.AI.TextAnalytics.Samples
 
             TextAnalyticsError error = TextAnalyticsModelFactory.TextAnalyticsError("InvalidDocument", "Document text is empty.");
 
-            var languages = new List<DetectLanguageResult>
+            List<DetectLanguageResult> languages = new()
             {
                 TextAnalyticsModelFactory.DetectLanguageResult("0", default, TextAnalyticsModelFactory.DetectedLanguage("English", "en", 1.00)),
                 TextAnalyticsModelFactory.DetectLanguageResult("1", error),

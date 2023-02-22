@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Azure.AI.AnomalyDetector.Models;
+using Azure.AI.AnomalyDetector;
 using Azure.Core.TestFramework;
 using NUnit.Framework;
 
@@ -17,9 +17,9 @@ namespace Azure.AI.AnomalyDetector.Tests.Samples
     public partial class AnomalyDetectorSamples : SamplesBase<AnomalyDetectorTestEnvironment>
     {
         [Test]
-        public async Task DetectEntireSeriesAnomaly()
+        public void DetectEntireSeriesAnomaly()
         {
-            #region Snippet:CreateAnomalyDetectorClient
+            #region Snippet:CreateAnomalyDetectorClientEntire
 
             //read endpoint and apiKey
             string endpoint = TestEnvironment.Endpoint;
@@ -45,7 +45,7 @@ namespace Azure.AI.AnomalyDetector.Tests.Samples
                 .Select(e => new TimeSeriesPoint(float.Parse(e[1])){ Timestamp = DateTime.Parse(e[0])}).ToList();
 
             //create request
-            DetectRequest request = new DetectRequest(list)
+            UnivariateDetectionOptions request = new UnivariateDetectionOptions(list)
             {
                 Granularity = TimeGranularity.Daily
             };
@@ -57,26 +57,34 @@ namespace Azure.AI.AnomalyDetector.Tests.Samples
             //detect
             Console.WriteLine("Detecting anomalies in the entire time series.");
 
-            EntireDetectResponse result = await client.DetectEntireSeriesAsync(request).ConfigureAwait(false);
-
-            if (result.IsAnomaly.Contains(true))
+            try
             {
-                Console.WriteLine("An anomaly was detected at index:");
+                UnivariateEntireDetectionResult result = client.DetectUnivariateEntireSeries(request);
+
+                bool hasAnomaly = false;
                 for (int i = 0; i < request.Series.Count; ++i)
                 {
                     if (result.IsAnomaly[i])
                     {
-                        Console.Write(i);
-                        Console.Write(" ");
+                        Console.WriteLine("An anomaly was detected at index: {0}.", i);
+                        hasAnomaly = true;
                     }
                 }
-                Console.WriteLine();
+                if (!hasAnomaly)
+                {
+                    Console.WriteLine("No anomalies detected in the series.");
+                }
             }
-            else
+            catch (RequestFailedException ex)
             {
-                Console.WriteLine(" No anomalies detected in the series.");
+                Console.WriteLine(String.Format("Entire detection failed: {0}", ex.Message));
+                throw;
             }
-
+            catch (Exception ex)
+            {
+                Console.WriteLine(String.Format("Detection error. {0}", ex.Message));
+                throw;
+            }
             #endregion
         }
     }

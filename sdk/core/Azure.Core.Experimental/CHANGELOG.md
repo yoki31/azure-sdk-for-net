@@ -1,8 +1,61 @@
 # Release History
 
-## 0.1.0-preview.19 (Unreleased)
+## 0.1.0-preview.25 (Unreleased)
 
 ### Features Added
+
+### Breaking Changes
+
+### Bugs Fixed
+
+### Other Changes
+
+## 0.1.0-preview.24 (2023-02-06)
+
+### Features Added
+
+- Added types `MutableJsonDocument` and `MutableJsonElement`.  These types have APIs similar to the BCL types `JsonDocument` and `JsonElement`, but allow the JSON content to be changed.
+- Added types `DynamicJson` and `DynamicData`, which provide a dynamic layer over a data payload.  This allows schematized data to be accessed using patterns similar to those used with standard .NET types.
+- Added extension method `ToDynamic()` to `BinaryData`.  This enables retrieving `DynamicJson` from the `Response.Content` property.
+
+### Breaking Changes
+
+- Removed `JsonData` type.
+
+## 0.1.0-preview.23 (2022-11-08)
+
+### Other Changes
+
+- Added .NET 6 to the target frameworks
+
+## 0.1.0-preview.22 (2022-04-04)
+
+### Breaking Changes
+
+- `MessageWithMetadata` has been moved into the `Azure.Core` package.
+
+## 0.1.0-preview.21 (2022-03-09)
+
+### Breaking Changes
+
+- Rename `MessageWithMetadata` to `BinaryContent`
+
+## 0.1.0-preview.20 (2022-02-07)
+
+### Features Added
+
+- `MessageWithMetadata` is now a concrete rather than abstract class.
+
+### Breaking Changes
+
+- `MessageWithMetadata` is now in the `Azure` namespace rather than `Azure.Messaging`.
+- Changed `ContentType` property of `MessageWithMetadata` from a `string` to a `ContentType`
+
+## 0.1.0-preview.19 (2022-01-11)
+
+### Features Added
+
+- Added `RequestOptions` to enable per-invocation control of the request pipeline.
 
 ### Breaking Changes
 
@@ -11,10 +64,6 @@
     - `ExceptionFormattingResponseClassifier`
     - `ResponseExtensions`
     - `ResponsePropertiesPolicy`
-
-### Bugs Fixed
-
-### Other Changes
 
 ## 0.1.0-preview.18 (2021-11-03)
 

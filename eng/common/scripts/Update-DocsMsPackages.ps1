@@ -80,7 +80,7 @@ function GetDocsMetadataForMoniker($moniker) {
 }
 function GetDocsMetadata() {
   # Read metadata from CSV
-  $csvMetadata = (Get-CSVMetadata).Where({ $_.New -eq 'true' -and $_.Hide -ne 'true' })
+  $csvMetadata = (Get-CSVMetadata).Where({ ($_.New -eq 'true' -or $_.MSDocService -ne '') -and $_.Hide -ne 'true'})
 
   # Read metadata from docs repo
   $metadataByPackage = @{}
@@ -140,7 +140,7 @@ if ($UpdateDocsMsPackagesFn -and (Test-Path "Function:$UpdateDocsMsPackagesFn"))
 
   try {
     $docsMetadata = GetDocsMetadata
-    &$UpdateDocsMsPackagesFn -DocsRepoLocation $DocRepoLocation -DocsMetadata $docsMetadata
+    &$UpdateDocsMsPackagesFn -DocsRepoLocation $DocRepoLocation -DocsMetadata $docsMetadata -PackageSourceOverride $PackageSourceOverride -DocValidationImageId $ImageId
   } catch { 
     LogError "Exception while updating docs.ms packages"
     LogError $_ 

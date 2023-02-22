@@ -2,27 +2,39 @@
 // Licensed under the MIT License.
 
 using System;
-
-using Azure.Monitor.OpenTelemetry.Exporter;
-
+using Azure.Core;
 using OpenTelemetry;
 using OpenTelemetry.Logs;
 
-namespace Microsoft.Extensions.Logging
+namespace Azure.Monitor.OpenTelemetry.Exporter
 {
-    internal static class AzureMonitorExporterLoggingExtensions
+    /// <summary>
+    /// Extension methods to simplify registering of Azure Monitor Log Exporter.
+    /// </summary>
+    public static class AzureMonitorExporterLoggingExtensions
     {
-        public static OpenTelemetryLoggerOptions AddAzureMonitorLogExporter(this OpenTelemetryLoggerOptions loggerOptions, Action<AzureMonitorExporterOptions> configure = null)
+        /// <summary>
+        /// Adds Azure Monitor Log Exporter with OpenTelemetryLoggerOptions.
+        /// </summary>
+        /// <param name="loggerOptions"><see cref="OpenTelemetryLoggerOptions"/> options to use.</param>
+        /// <param name="configure">Exporter configuration options.</param>
+        /// <param name="credential"><see cref="TokenCredential" /></param>
+        /// <returns>The instance of <see cref="OpenTelemetryLoggerOptions"/> to chain the calls.</returns>
+        public static OpenTelemetryLoggerOptions AddAzureMonitorLogExporter(this OpenTelemetryLoggerOptions loggerOptions, Action<AzureMonitorExporterOptions>? configure = null, TokenCredential? credential = null)
         {
             if (loggerOptions == null)
             {
                 throw new ArgumentNullException(nameof(loggerOptions));
             }
 
+            // Ideally user should set this to true
+            // but if they miss we may have an issue of missing state values which gets converted to custom dimensions.
+            loggerOptions.ParseStateValues = true;
+
             var options = new AzureMonitorExporterOptions();
             configure?.Invoke(options);
 
-            return loggerOptions.AddProcessor(new BatchLogRecordExportProcessor(new AzureMonitorLogExporter(options)));
+            return loggerOptions.AddProcessor(new BatchLogRecordExportProcessor(new AzureMonitorLogExporter(options, credential)));
         }
     }
 }

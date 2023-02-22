@@ -11,14 +11,14 @@ using Azure.Core;
 
 namespace Azure.ResourceManager.Compute.Models
 {
-    public partial class VirtualMachineScaleSetInstanceViewStatusesSummary
+    internal partial class VirtualMachineScaleSetInstanceViewStatusesSummary
     {
         internal static VirtualMachineScaleSetInstanceViewStatusesSummary DeserializeVirtualMachineScaleSetInstanceViewStatusesSummary(JsonElement element)
         {
             Optional<IReadOnlyList<VirtualMachineStatusCodeCount>> statusesSummary = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("statusesSummary"))
+                if (property.NameEquals("statusesSummary"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {

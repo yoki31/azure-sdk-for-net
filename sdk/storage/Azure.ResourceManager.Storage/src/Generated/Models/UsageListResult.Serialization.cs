@@ -15,20 +15,20 @@ namespace Azure.ResourceManager.Storage.Models
     {
         internal static UsageListResult DeserializeUsageListResult(JsonElement element)
         {
-            Optional<IReadOnlyList<Usage>> value = default;
+            Optional<IReadOnlyList<StorageUsage>> value = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("value"))
+                if (property.NameEquals("value"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    List<Usage> array = new List<Usage>();
+                    List<StorageUsage> array = new List<StorageUsage>();
                     foreach (var item in property.Value.EnumerateArray())
                     {
-                        array.Add(Usage.DeserializeUsage(item));
+                        array.Add(StorageUsage.DeserializeStorageUsage(item));
                     }
                     value = array;
                     continue;

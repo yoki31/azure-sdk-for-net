@@ -5,6 +5,7 @@
 
 #nullable disable
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Azure.Core;
@@ -16,43 +17,43 @@ namespace Azure.ResourceManager.Resources.Models
         internal static WhatIfPropertyChange DeserializeWhatIfPropertyChange(JsonElement element)
         {
             string path = default;
-            PropertyChangeType propertyChangeType = default;
-            Optional<object> before = default;
-            Optional<object> after = default;
+            WhatIfPropertyChangeType propertyChangeType = default;
+            Optional<BinaryData> before = default;
+            Optional<BinaryData> after = default;
             Optional<IReadOnlyList<WhatIfPropertyChange>> children = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("path"))
+                if (property.NameEquals("path"u8))
                 {
                     path = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("propertyChangeType"))
+                if (property.NameEquals("propertyChangeType"u8))
                 {
-                    propertyChangeType = property.Value.GetString().ToPropertyChangeType();
+                    propertyChangeType = property.Value.GetString().ToWhatIfPropertyChangeType();
                     continue;
                 }
-                if (property.NameEquals("before"))
-                {
-                    if (property.Value.ValueKind == JsonValueKind.Null)
-                    {
-                        property.ThrowNonNullablePropertyIsNull();
-                        continue;
-                    }
-                    before = property.Value.GetObject();
-                    continue;
-                }
-                if (property.NameEquals("after"))
+                if (property.NameEquals("before"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    after = property.Value.GetObject();
+                    before = BinaryData.FromString(property.Value.GetRawText());
                     continue;
                 }
-                if (property.NameEquals("children"))
+                if (property.NameEquals("after"u8))
+                {
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        property.ThrowNonNullablePropertyIsNull();
+                        continue;
+                    }
+                    after = BinaryData.FromString(property.Value.GetRawText());
+                    continue;
+                }
+                if (property.NameEquals("children"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {

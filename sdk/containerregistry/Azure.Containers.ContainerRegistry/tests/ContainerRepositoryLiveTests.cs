@@ -77,7 +77,7 @@ namespace Azure.Containers.ContainerRegistry.Tests
             var repository = client.GetRepository(_repositoryName);
 
             // Act
-            Assert.ThrowsAsync<RequestFailedException>((AsyncTestDelegate)(() =>
+            Assert.ThrowsAsync<RequestFailedException>(() =>
                 repository.UpdatePropertiesAsync(
                     new ContainerRepositoryProperties()
                     {
@@ -85,44 +85,42 @@ namespace Azure.Containers.ContainerRegistry.Tests
                         CanRead = false,
                         CanWrite = false,
                         CanDelete = false,
-                    })));
+                    }));
         }
 
-        [RecordedTest, NonParallelizable]
+        [RecordedTest]
         public async Task CanDeleteRepository()
         {
             // Arrange
-            List<string> tags = new List<string>()
-            {
-                "latest",
-                "v1",
-                "v2",
-                "v3",
-                "v4",
-            };
-
             var client = CreateClient();
-            var repository = client.GetRepository(_repositoryName);
+            var repositoryId = Recording.Random.NewGuid().ToString();
 
             try
             {
                 if (Mode != RecordedTestMode.Playback)
                 {
-                    await ImportImageAsync(TestEnvironment.Registry, _repositoryName, tags);
+                    await CreateRepositoryAsync(repositoryId);
                 }
+
+                var repositories = client.GetRepositoryNamesAsync();
+                Assert.IsTrue(await repositories.ContainsAsync(repositoryId), $"Test set-up failed: Repository {repositoryId} was not deleted.");
+
+                var repository = client.GetRepository(repositoryId);
 
                 // Act
                 await repository.DeleteAsync();
+                await Delay(5000);
+
+                await Delay(5000);
 
                 // Assert
                 Assert.ThrowsAsync<RequestFailedException>(async () => { await repository.GetPropertiesAsync(); });
             }
             finally
             {
-                // Clean up - put the repository with tags back.
                 if (Mode != RecordedTestMode.Playback)
                 {
-                    await ImportImageAsync(TestEnvironment.Registry, _repositoryName, tags);
+                    await DeleteRepositoryAsync(repositoryId);
                 }
             }
         }
@@ -137,7 +135,7 @@ namespace Azure.Containers.ContainerRegistry.Tests
             var repository = client.GetRepository(_repositoryName);
 
             // Act
-            AsyncPageable<ArtifactManifestProperties> manifests = repository.GetManifestPropertiesCollectionAsync();
+            AsyncPageable<ArtifactManifestProperties> manifests = repository.GetAllManifestPropertiesAsync();
 
             ArtifactManifestProperties latest = null;
             await foreach (ArtifactManifestProperties manifest in manifests)
@@ -166,7 +164,7 @@ namespace Azure.Containers.ContainerRegistry.Tests
             int minExpectedPages = 2;
 
             // Act
-            AsyncPageable<ArtifactManifestProperties> artifacts = repository.GetManifestPropertiesCollectionAsync();
+            AsyncPageable<ArtifactManifestProperties> artifacts = repository.GetAllManifestPropertiesAsync();
             var pages = artifacts.AsPages(pageSizeHint: pageSize);
 
             // Assert
@@ -185,7 +183,7 @@ namespace Azure.Containers.ContainerRegistry.Tests
             int pageSize = 1;
             int minExpectedPages = 2;
 
-            AsyncPageable<ArtifactManifestProperties> manifests = repository.GetManifestPropertiesCollectionAsync();
+            AsyncPageable<ArtifactManifestProperties> manifests = repository.GetAllManifestPropertiesAsync();
             string firstDigest = null;
             string secondDigest = null;
             int artifactCount = 0;
@@ -206,7 +204,7 @@ namespace Azure.Containers.ContainerRegistry.Tests
             }
 
             // Act
-            manifests = repository.GetManifestPropertiesCollectionAsync();
+            manifests = repository.GetAllManifestPropertiesAsync();
             var pages = manifests.AsPages($"</acr/v1/{_repositoryName}/_manifests?last={firstDigest}&n={pageSize}>");
 
             int pageCount = 0;
@@ -232,40 +230,40 @@ namespace Azure.Containers.ContainerRegistry.Tests
         public async Task CanGetManifestsOrdered()
         {
             // Arrange
-            string repositoryName = $"library/node";
-            string tag = "newest";
             var client = CreateClient();
-            var repository = client.GetRepository(repositoryName);
-            var artifact = client.GetArtifact(repositoryName, tag);
+            var repositoryId = Recording.Random.NewGuid().ToString();
+            List<string> tags = new List<string>() { "v1", "v2" };
+            var repository = client.GetRepository(repositoryId);
 
             try
             {
                 if (Mode != RecordedTestMode.Playback)
                 {
-                    await ImportImageAsync(TestEnvironment.Registry, repositoryName, tag);
+                    // Upload in order by tag
+                    await CreateImageAsync(repositoryId, tags[0]);
+                    await Delay(200);
+                    await CreateImageAsync(repositoryId, tags[1]);
                 }
 
                 // Act
-                AsyncPageable<ArtifactManifestProperties> manifests = repository.GetManifestPropertiesCollectionAsync(ArtifactManifestOrderBy.LastUpdatedOnDescending);
+                AsyncPageable<ArtifactManifestProperties> manifests = repository.GetAllManifestPropertiesAsync(ArtifactManifestOrder.LastUpdatedOnAscending);
 
                 // Assert
-                string digest = null;
+                int i = 0;
                 await foreach (ArtifactManifestProperties manifest in manifests)
                 {
-                    // Make sure we're looking at a manifest list, which has the tag
-                    if (manifest.RelatedArtifacts != null && manifest.RelatedArtifacts.Count > 0)
-                    {
-                        digest = manifest.Digest;
-                        Assert.That(manifest.RepositoryName.Contains(repositoryName));
-                        Assert.That(manifest.Tags.Contains(tag));
-                        break;
-                    }
+                    Assert.AreEqual(repositoryId, manifest.RepositoryName);
+                    Assert.AreEqual(1, manifest.Tags.Count);
+                    Assert.AreEqual(tags[i], manifest.Tags[0]);
+                    i++;
                 }
+
+                Assert.AreEqual(2, i);
             }
             finally
             {
                 // Clean up
-                await artifact.DeleteAsync();
+                await repository.DeleteAsync();
             }
         }
     }

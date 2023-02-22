@@ -11,14 +11,14 @@ using Azure.Core;
 
 namespace Azure.ResourceManager.Compute.Models
 {
-    public partial class DedicatedHostGroupInstanceView
+    internal partial class DedicatedHostGroupInstanceView
     {
         internal static DedicatedHostGroupInstanceView DeserializeDedicatedHostGroupInstanceView(JsonElement element)
         {
             Optional<IReadOnlyList<DedicatedHostInstanceViewWithName>> hosts = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("hosts"))
+                if (property.NameEquals("hosts"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {

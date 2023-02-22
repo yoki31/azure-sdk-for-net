@@ -10,8 +10,22 @@ using Azure.Core;
 
 namespace Azure.AI.TextAnalytics.Models
 {
-    internal partial class ExtractedSummarySentence
+    internal partial class ExtractedSummarySentence : IUtf8JsonSerializable
     {
+        void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
+        {
+            writer.WriteStartObject();
+            writer.WritePropertyName("text"u8);
+            writer.WriteStringValue(Text);
+            writer.WritePropertyName("rankScore"u8);
+            writer.WriteNumberValue(RankScore);
+            writer.WritePropertyName("offset"u8);
+            writer.WriteNumberValue(Offset);
+            writer.WritePropertyName("length"u8);
+            writer.WriteNumberValue(Length);
+            writer.WriteEndObject();
+        }
+
         internal static ExtractedSummarySentence DeserializeExtractedSummarySentence(JsonElement element)
         {
             string text = default;
@@ -20,22 +34,22 @@ namespace Azure.AI.TextAnalytics.Models
             int length = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("text"))
+                if (property.NameEquals("text"u8))
                 {
                     text = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("rankScore"))
+                if (property.NameEquals("rankScore"u8))
                 {
                     rankScore = property.Value.GetDouble();
                     continue;
                 }
-                if (property.NameEquals("offset"))
+                if (property.NameEquals("offset"u8))
                 {
                     offset = property.Value.GetInt32();
                     continue;
                 }
-                if (property.NameEquals("length"))
+                if (property.NameEquals("length"u8))
                 {
                     length = property.Value.GetInt32();
                     continue;

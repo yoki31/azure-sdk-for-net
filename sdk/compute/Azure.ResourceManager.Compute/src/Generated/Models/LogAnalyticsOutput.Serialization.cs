@@ -10,14 +10,14 @@ using Azure.Core;
 
 namespace Azure.ResourceManager.Compute.Models
 {
-    public partial class LogAnalyticsOutput
+    internal partial class LogAnalyticsOutput
     {
         internal static LogAnalyticsOutput DeserializeLogAnalyticsOutput(JsonElement element)
         {
             Optional<string> output = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("output"))
+                if (property.NameEquals("output"u8))
                 {
                     output = property.Value.GetString();
                     continue;

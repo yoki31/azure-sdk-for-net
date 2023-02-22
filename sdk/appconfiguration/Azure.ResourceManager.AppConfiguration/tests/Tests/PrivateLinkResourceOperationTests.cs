@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Core;
 using Azure.Core.TestFramework;
 using Azure.ResourceManager.AppConfiguration.Models;
 using Azure.ResourceManager.Resources;
@@ -13,9 +14,9 @@ namespace Azure.ResourceManager.AppConfiguration.Tests
 {
     public class PrivateLinkResourceOperationTests : AppConfigurationClientBase
     {
-        private ResourceGroup ResGroup { get; set; }
-        private ConfigurationStore ConfigStore { get; set; }
-        private PrivateLinkResource LinkResource { get; set; }
+        private ResourceGroupResource ResGroup { get; set; }
+        private AppConfigurationStoreResource ConfigStore { get; set; }
+        private AppConfigurationPrivateLinkResource LinkResource { get; set; }
 
         public PrivateLinkResourceOperationTests(bool isAsync)
             : base(isAsync)
@@ -29,14 +30,14 @@ namespace Azure.ResourceManager.AppConfiguration.Tests
             {
                 Initialize();
                 string groupName = Recording.GenerateAssetName(ResourceGroupPrefix);
-                ResGroup = await (await ArmClient.GetDefaultSubscriptionAsync().Result.GetResourceGroups().CreateOrUpdateAsync(groupName, new ResourceGroupData(Location))).WaitForCompletionAsync();
+                ResGroup = (await ArmClient.GetDefaultSubscriptionAsync().Result.GetResourceGroups().CreateOrUpdateAsync(WaitUntil.Completed, groupName, new ResourceGroupData(Location))).Value;
                 string configurationStoreName = Recording.GenerateAssetName("testapp-");
-                ConfigurationStoreData configurationStoreData = new ConfigurationStoreData(Location, new Models.Sku("Standard"))
+                AppConfigurationStoreData configurationStoreData = new AppConfigurationStoreData(Location, new AppConfigurationSku("Standard"))
                 {
-                    PublicNetworkAccess = PublicNetworkAccess.Disabled
+                    PublicNetworkAccess = AppConfigurationPublicNetworkAccess.Disabled
                 };
-                ConfigStore = await (await ResGroup.GetConfigurationStores().CreateOrUpdateAsync(configurationStoreName, configurationStoreData)).WaitForCompletionAsync();
-                LinkResource = await ConfigStore.GetPrivateLinkResources().GetAsync("configurationStores");
+                ConfigStore = (await ResGroup.GetAppConfigurationStores().CreateOrUpdateAsync(WaitUntil.Completed, configurationStoreName, configurationStoreData)).Value;
+                LinkResource = await ConfigStore.GetAppConfigurationPrivateLinkResources().GetAsync("configurationStores");
             }
         }
 
@@ -44,7 +45,7 @@ namespace Azure.ResourceManager.AppConfiguration.Tests
         [Test]
         public async Task GetTest()
         {
-            PrivateLinkResource linkResource = await LinkResource.GetAsync();
+            AppConfigurationPrivateLinkResource linkResource = await LinkResource.GetAsync();
 
             Assert.IsTrue(LinkResource.Data.Name.Equals(linkResource.Data.Name));
         }
@@ -53,7 +54,7 @@ namespace Azure.ResourceManager.AppConfiguration.Tests
         [Test]
         public async Task GetAvailableLocationsTest()
         {
-            IEnumerable<Resources.Models.Location> locations = await LinkResource.GetAvailableLocationsAsync();
+            IEnumerable<AzureLocation> locations = (await LinkResource.GetAvailableLocationsAsync()).Value;
 
             Assert.IsTrue(locations.Count() >= 0);
         }

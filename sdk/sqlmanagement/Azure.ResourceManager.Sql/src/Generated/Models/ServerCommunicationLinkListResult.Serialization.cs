@@ -8,6 +8,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using Azure.Core;
+using Azure.ResourceManager.Sql;
 
 namespace Azure.ResourceManager.Sql.Models
 {
@@ -15,20 +16,20 @@ namespace Azure.ResourceManager.Sql.Models
     {
         internal static ServerCommunicationLinkListResult DeserializeServerCommunicationLinkListResult(JsonElement element)
         {
-            Optional<IReadOnlyList<ServerCommunicationLink>> value = default;
+            Optional<IReadOnlyList<SqlServerCommunicationLinkData>> value = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("value"))
+                if (property.NameEquals("value"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    List<ServerCommunicationLink> array = new List<ServerCommunicationLink>();
+                    List<SqlServerCommunicationLinkData> array = new List<SqlServerCommunicationLinkData>();
                     foreach (var item in property.Value.EnumerateArray())
                     {
-                        array.Add(ServerCommunicationLink.DeserializeServerCommunicationLink(item));
+                        array.Add(SqlServerCommunicationLinkData.DeserializeSqlServerCommunicationLinkData(item));
                     }
                     value = array;
                     continue;

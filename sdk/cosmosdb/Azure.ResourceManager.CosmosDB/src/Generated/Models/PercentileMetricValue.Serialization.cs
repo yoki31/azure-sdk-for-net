@@ -22,7 +22,7 @@ namespace Azure.ResourceManager.CosmosDB.Models
             Optional<double> p90 = default;
             Optional<double> p95 = default;
             Optional<double> p99 = default;
-            Optional<int> Count = default;
+            Optional<int> count = default;
             Optional<double> average = default;
             Optional<double> maximum = default;
             Optional<double> minimum = default;
@@ -30,7 +30,7 @@ namespace Azure.ResourceManager.CosmosDB.Models
             Optional<double> total = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("P10"))
+                if (property.NameEquals("P10"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -40,7 +40,7 @@ namespace Azure.ResourceManager.CosmosDB.Models
                     p10 = property.Value.GetDouble();
                     continue;
                 }
-                if (property.NameEquals("P25"))
+                if (property.NameEquals("P25"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -50,7 +50,7 @@ namespace Azure.ResourceManager.CosmosDB.Models
                     p25 = property.Value.GetDouble();
                     continue;
                 }
-                if (property.NameEquals("P50"))
+                if (property.NameEquals("P50"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -60,7 +60,7 @@ namespace Azure.ResourceManager.CosmosDB.Models
                     p50 = property.Value.GetDouble();
                     continue;
                 }
-                if (property.NameEquals("P75"))
+                if (property.NameEquals("P75"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -70,7 +70,7 @@ namespace Azure.ResourceManager.CosmosDB.Models
                     p75 = property.Value.GetDouble();
                     continue;
                 }
-                if (property.NameEquals("P90"))
+                if (property.NameEquals("P90"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -80,7 +80,7 @@ namespace Azure.ResourceManager.CosmosDB.Models
                     p90 = property.Value.GetDouble();
                     continue;
                 }
-                if (property.NameEquals("P95"))
+                if (property.NameEquals("P95"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -90,7 +90,7 @@ namespace Azure.ResourceManager.CosmosDB.Models
                     p95 = property.Value.GetDouble();
                     continue;
                 }
-                if (property.NameEquals("P99"))
+                if (property.NameEquals("P99"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -100,17 +100,17 @@ namespace Azure.ResourceManager.CosmosDB.Models
                     p99 = property.Value.GetDouble();
                     continue;
                 }
-                if (property.NameEquals("_count"))
+                if (property.NameEquals("_count"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    Count = property.Value.GetInt32();
+                    count = property.Value.GetInt32();
                     continue;
                 }
-                if (property.NameEquals("average"))
+                if (property.NameEquals("average"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -120,7 +120,7 @@ namespace Azure.ResourceManager.CosmosDB.Models
                     average = property.Value.GetDouble();
                     continue;
                 }
-                if (property.NameEquals("maximum"))
+                if (property.NameEquals("maximum"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -130,7 +130,7 @@ namespace Azure.ResourceManager.CosmosDB.Models
                     maximum = property.Value.GetDouble();
                     continue;
                 }
-                if (property.NameEquals("minimum"))
+                if (property.NameEquals("minimum"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -140,7 +140,7 @@ namespace Azure.ResourceManager.CosmosDB.Models
                     minimum = property.Value.GetDouble();
                     continue;
                 }
-                if (property.NameEquals("timestamp"))
+                if (property.NameEquals("timestamp"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -150,7 +150,7 @@ namespace Azure.ResourceManager.CosmosDB.Models
                     timestamp = property.Value.GetDateTimeOffset("O");
                     continue;
                 }
-                if (property.NameEquals("total"))
+                if (property.NameEquals("total"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -161,7 +161,7 @@ namespace Azure.ResourceManager.CosmosDB.Models
                     continue;
                 }
             }
-            return new PercentileMetricValue(Optional.ToNullable(Count), Optional.ToNullable(average), Optional.ToNullable(maximum), Optional.ToNullable(minimum), Optional.ToNullable(timestamp), Optional.ToNullable(total), Optional.ToNullable(p10), Optional.ToNullable(p25), Optional.ToNullable(p50), Optional.ToNullable(p75), Optional.ToNullable(p90), Optional.ToNullable(p95), Optional.ToNullable(p99));
+            return new PercentileMetricValue(Optional.ToNullable(count), Optional.ToNullable(average), Optional.ToNullable(maximum), Optional.ToNullable(minimum), Optional.ToNullable(timestamp), Optional.ToNullable(total), Optional.ToNullable(p10), Optional.ToNullable(p25), Optional.ToNullable(p50), Optional.ToNullable(p75), Optional.ToNullable(p90), Optional.ToNullable(p95), Optional.ToNullable(p99));
         }
     }
 }

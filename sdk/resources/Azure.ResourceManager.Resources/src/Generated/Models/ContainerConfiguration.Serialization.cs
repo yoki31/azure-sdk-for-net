@@ -10,14 +10,14 @@ using Azure.Core;
 
 namespace Azure.ResourceManager.Resources.Models
 {
-    public partial class ContainerConfiguration : IUtf8JsonSerializable
+    internal partial class ContainerConfiguration : IUtf8JsonSerializable
     {
         void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
             if (Optional.IsDefined(ContainerGroupName))
             {
-                writer.WritePropertyName("containerGroupName");
+                writer.WritePropertyName("containerGroupName"u8);
                 writer.WriteStringValue(ContainerGroupName);
             }
             writer.WriteEndObject();
@@ -28,7 +28,7 @@ namespace Azure.ResourceManager.Resources.Models
             Optional<string> containerGroupName = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("containerGroupName"))
+                if (property.NameEquals("containerGroupName"u8))
                 {
                     containerGroupName = property.Value.GetString();
                     continue;

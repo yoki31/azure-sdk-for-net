@@ -102,7 +102,7 @@ All random values should be obtained via `this.Recording.Random` since we use
 the same seed on test playback to ensure our client code generates the same
 "random" values each time.  You can't share any state between tests or rely on
 ordering because you don't know the order they'll be recorded or replayed.  Any
-sensitive values are redacted via the [`StorageRecordedTestSanitizer`](https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/storage/Azure.Storage.Common/tests/Shared/StorageRecordedTestSanitizer.cs).
+sensitive values are redacted via the the configuration in the constructor of [`StorageTestBase`](https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/storage/Azure.Storage.Common/tests/Shared/StorageTestBase.cs).
 
 ### Running tests
 
@@ -110,7 +110,7 @@ The easiest way to run the tests is via Visual Studio's unit test runner.
 
 You can also run tests via the command line using `dotnet test`, but that will
 run tests for all supported platforms simultaneously and intermingle their
-output.  You can run the tests for just one platform with `dotnet test -f netcoreapp3.1`
+output.  You can run the tests for just one platform with `dotnet test -f net6.0`
 or `dotnet test -f net461`.
 
 The recorded tests are run automatically on every pull request.  Live tests are

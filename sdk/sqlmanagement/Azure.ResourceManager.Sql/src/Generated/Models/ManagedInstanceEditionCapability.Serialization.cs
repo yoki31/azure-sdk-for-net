@@ -17,16 +17,18 @@ namespace Azure.ResourceManager.Sql.Models
         {
             Optional<string> name = default;
             Optional<IReadOnlyList<ManagedInstanceFamilyCapability>> supportedFamilies = default;
-            Optional<CapabilityStatus> status = default;
+            Optional<IReadOnlyList<StorageCapability>> supportedStorageCapabilities = default;
+            Optional<bool> zoneRedundant = default;
+            Optional<SqlCapabilityStatus> status = default;
             Optional<string> reason = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("name"))
+                if (property.NameEquals("name"u8))
                 {
                     name = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("supportedFamilies"))
+                if (property.NameEquals("supportedFamilies"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -41,23 +43,48 @@ namespace Azure.ResourceManager.Sql.Models
                     supportedFamilies = array;
                     continue;
                 }
-                if (property.NameEquals("status"))
+                if (property.NameEquals("supportedStorageCapabilities"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    status = property.Value.GetString().ToCapabilityStatus();
+                    List<StorageCapability> array = new List<StorageCapability>();
+                    foreach (var item in property.Value.EnumerateArray())
+                    {
+                        array.Add(StorageCapability.DeserializeStorageCapability(item));
+                    }
+                    supportedStorageCapabilities = array;
                     continue;
                 }
-                if (property.NameEquals("reason"))
+                if (property.NameEquals("zoneRedundant"u8))
+                {
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        property.ThrowNonNullablePropertyIsNull();
+                        continue;
+                    }
+                    zoneRedundant = property.Value.GetBoolean();
+                    continue;
+                }
+                if (property.NameEquals("status"u8))
+                {
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        property.ThrowNonNullablePropertyIsNull();
+                        continue;
+                    }
+                    status = property.Value.GetString().ToSqlCapabilityStatus();
+                    continue;
+                }
+                if (property.NameEquals("reason"u8))
                 {
                     reason = property.Value.GetString();
                     continue;
                 }
             }
-            return new ManagedInstanceEditionCapability(name.Value, Optional.ToList(supportedFamilies), Optional.ToNullable(status), reason.Value);
+            return new ManagedInstanceEditionCapability(name.Value, Optional.ToList(supportedFamilies), Optional.ToList(supportedStorageCapabilities), Optional.ToNullable(zoneRedundant), Optional.ToNullable(status), reason.Value);
         }
     }
 }

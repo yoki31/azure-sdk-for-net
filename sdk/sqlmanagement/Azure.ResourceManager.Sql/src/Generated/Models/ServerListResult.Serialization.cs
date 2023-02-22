@@ -8,6 +8,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using Azure.Core;
+using Azure.ResourceManager.Sql;
 
 namespace Azure.ResourceManager.Sql.Models
 {
@@ -15,26 +16,26 @@ namespace Azure.ResourceManager.Sql.Models
     {
         internal static ServerListResult DeserializeServerListResult(JsonElement element)
         {
-            Optional<IReadOnlyList<Server>> value = default;
+            Optional<IReadOnlyList<SqlServerData>> value = default;
             Optional<string> nextLink = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("value"))
+                if (property.NameEquals("value"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    List<Server> array = new List<Server>();
+                    List<SqlServerData> array = new List<SqlServerData>();
                     foreach (var item in property.Value.EnumerateArray())
                     {
-                        array.Add(Server.DeserializeServer(item));
+                        array.Add(SqlServerData.DeserializeSqlServerData(item));
                     }
                     value = array;
                     continue;
                 }
-                if (property.NameEquals("nextLink"))
+                if (property.NameEquals("nextLink"u8))
                 {
                     nextLink = property.Value.GetString();
                     continue;

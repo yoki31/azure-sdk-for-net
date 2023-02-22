@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System;
@@ -6,9 +6,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
-using Azure.AI.AnomalyDetector.Models;
+using Azure.AI.AnomalyDetector;
 using Azure.Core.TestFramework;
 using NUnit.Framework;
 
@@ -17,7 +18,7 @@ namespace Azure.AI.AnomalyDetector.Tests.Samples
     public partial class AnomalyDetectorSamples : SamplesBase<AnomalyDetectorTestEnvironment>
     {
         [Test]
-        public async Task DetectLastPointAnomaly()
+        public void DetectLastPointAnomaly()
         {
             //read endpoint and apiKey
             string endpoint = TestEnvironment.Endpoint;
@@ -39,7 +40,7 @@ namespace Azure.AI.AnomalyDetector.Tests.Samples
                 .Select(e => new TimeSeriesPoint(float.Parse(e[1])){ Timestamp = DateTime.Parse(e[0])}).ToList();
 
             //create request
-            DetectRequest request = new DetectRequest(list)
+            UnivariateDetectionOptions request = new UnivariateDetectionOptions(list)
             {
                 Granularity = TimeGranularity.Daily
             };
@@ -49,17 +50,29 @@ namespace Azure.AI.AnomalyDetector.Tests.Samples
             //detect
             Console.WriteLine("Detecting the anomaly status of the latest point in the series.");
 
-            LastDetectResponse result = await client.DetectLastPointAsync(request).ConfigureAwait(false);
-
-            if (result.IsAnomaly)
+            try
             {
-                Console.WriteLine("The latest point was detected as an anomaly.");
-            }
-            else
-            {
-                Console.WriteLine("The latest point was not detected as an anomaly.");
-            }
+                UnivariateLastDetectionResult result = client.DetectUnivariateLastPoint(request);
 
+                if (result.IsAnomaly)
+                {
+                    Console.WriteLine("The latest point was detected as an anomaly.");
+                }
+                else
+                {
+                    Console.WriteLine("The latest point was not detected as an anomaly.");
+                }
+            }
+            catch (RequestFailedException ex)
+            {
+                Console.WriteLine(String.Format("Last detection failed: {0}", ex.Message));
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(String.Format("Detection error. {0}", ex.Message));
+                throw;
+            }
             #endregion
         }
     }

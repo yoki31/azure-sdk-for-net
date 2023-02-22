@@ -11,7 +11,13 @@ using NUnit.Framework;
 
 namespace Azure.Security.KeyVault.Administration.Tests
 {
+    // Though RecordingTestBase is attributed [NonParallelizable] now, make sure these tests never run in parallel if that ever changes
+    // or an intermediate base class adds [Parallelizable] in the future.
+    //
+    // Note: CIs still build/test all assemblies in parallel, so MHSM Keys tests may still run simultaneously.
     [NonParallelizable]
+    [IgnoreServiceError(404, "NotFound", Message = "The given jobId is not found", Reason = "Backup/restore tests have inherent concurrency issues")]
+    [IgnoreServiceError(409, "Conflict", Message = "User triggered Restore operation is in progress", Reason = "Backup/restore tests have inherent concurrency issues")]
     public abstract class BackupRestoreTestBase : AdministrationTestBase
     {
         public KeyVaultBackupClient Client { get; private set; }
@@ -23,25 +29,27 @@ namespace Azure.Security.KeyVault.Administration.Tests
         public BackupRestoreTestBase(bool isAsync, KeyVaultAdministrationClientOptions.ServiceVersion serviceVersion, RecordedTestMode? mode)
             : base(isAsync, serviceVersion, mode)
         {
-            Sanitizer = new BackupRestoreRecordedTestSanitizer();
+            JsonPathSanitizers.Add("$..token");
+            SanitizedQueryParameters.Add("sig");
         }
 
-        internal KeyVaultBackupClient GetClient(bool isInstrumented = true)
+        internal KeyVaultBackupClient GetClient()
         {
             var client = new KeyVaultBackupClient(
                 Uri,
                 TestEnvironment.Credential,
-                InstrumentClientOptions(new KeyVaultAdministrationClientOptions
+                InstrumentClientOptions(new KeyVaultAdministrationClientOptions(ServiceVersion)
                 {
                     Diagnostics =
+                    {
+                        LoggedHeaderNames =
                         {
-                            LoggedHeaderNames =
-                            {
-                                "x-ms-request-id",
-                            },
+                            "x-ms-request-id",
                         },
+                    },
                 }));
-            return isInstrumented ? InstrumentClient(client) : client;
+
+            return InstrumentClient(client);
         }
 
         protected override void Start()
@@ -59,7 +67,7 @@ namespace Azure.Security.KeyVault.Administration.Tests
         {
             if (Mode == RecordedTestMode.Playback)
             {
-                return RecordedTestSanitizer.SanitizeValue;
+                return SanitizeValue;
             }
             // Create a service level SAS that only allows reading from service
             // level APIs

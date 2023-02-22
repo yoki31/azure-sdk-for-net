@@ -11,7 +11,7 @@ using Azure.Core;
 
 namespace Azure.Quantum.Jobs.Models
 {
-    internal partial class QuantumJobQuotaList
+    public partial class QuantumJobQuotaList
     {
         internal static QuantumJobQuotaList DeserializeQuantumJobQuotaList(JsonElement element)
         {
@@ -19,7 +19,7 @@ namespace Azure.Quantum.Jobs.Models
             Optional<string> nextLink = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("value"))
+                if (property.NameEquals("value"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -34,7 +34,7 @@ namespace Azure.Quantum.Jobs.Models
                     value = array;
                     continue;
                 }
-                if (property.NameEquals("nextLink"))
+                if (property.NameEquals("nextLink"u8))
                 {
                     nextLink = property.Value.GetString();
                     continue;

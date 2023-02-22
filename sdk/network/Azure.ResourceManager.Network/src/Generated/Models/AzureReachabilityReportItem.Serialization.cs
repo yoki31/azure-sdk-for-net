@@ -16,21 +16,26 @@ namespace Azure.ResourceManager.Network.Models
         internal static AzureReachabilityReportItem DeserializeAzureReachabilityReportItem(JsonElement element)
         {
             Optional<string> provider = default;
-            Optional<string> azureLocation = default;
+            Optional<AzureLocation> azureLocation = default;
             Optional<IReadOnlyList<AzureReachabilityReportLatencyInfo>> latencies = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("provider"))
+                if (property.NameEquals("provider"u8))
                 {
                     provider = property.Value.GetString();
                     continue;
                 }
-                if (property.NameEquals("azureLocation"))
+                if (property.NameEquals("azureLocation"u8))
                 {
-                    azureLocation = property.Value.GetString();
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        property.ThrowNonNullablePropertyIsNull();
+                        continue;
+                    }
+                    azureLocation = new AzureLocation(property.Value.GetString());
                     continue;
                 }
-                if (property.NameEquals("latencies"))
+                if (property.NameEquals("latencies"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -46,7 +51,7 @@ namespace Azure.ResourceManager.Network.Models
                     continue;
                 }
             }
-            return new AzureReachabilityReportItem(provider.Value, azureLocation.Value, Optional.ToList(latencies));
+            return new AzureReachabilityReportItem(provider.Value, Optional.ToNullable(azureLocation), Optional.ToList(latencies));
         }
     }
 }

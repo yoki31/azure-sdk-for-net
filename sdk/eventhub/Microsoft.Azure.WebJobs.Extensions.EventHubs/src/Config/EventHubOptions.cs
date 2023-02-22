@@ -115,7 +115,8 @@ namespace Microsoft.Azure.WebJobs.EventHubs
         private int _maxEventBatchSize;
 
         /// <summary>
-        /// Gets or sets the maximum number of events delivered in a batch. Default 10.
+        /// Gets or sets the maximum number of events delivered in a batch. This setting applies only to functions that
+        /// receive multiple events. Default 10.
         /// </summary>
         public int MaxEventBatchSize
         {
@@ -128,6 +129,27 @@ namespace Microsoft.Azure.WebJobs.EventHubs
                     throw new ArgumentException("Batch size must be larger than 0.");
                 }
                 _maxEventBatchSize = value;
+            }
+        }
+
+        private int? _targetUnprocessedEventThreshold;
+
+        /// <summary>
+        /// Get or sets the target number of unprocessed events per worker for Event Hub-triggered functions. This is used in target-based scaling to override the default scaling threshold inferred from the <see cref="MaxEventBatchSize" /> option.
+        ///
+        /// If TargetUnprocessedEventThreshold is set, the total unprocessed event count will be divided by this value to determine the number of worker instances, which will then be rounded up to a worker instance count that creates a balanced partition distribution.
+        /// </summary>
+        public int? TargetUnprocessedEventThreshold
+        {
+            get => _targetUnprocessedEventThreshold;
+
+            set
+            {
+                if (value < 1)
+                {
+                    throw new ArgumentException("Unprocessed Event Threshold must be larger than 0.");
+                }
+                _targetUnprocessedEventThreshold = value;
             }
         }
 
@@ -187,6 +209,7 @@ namespace Microsoft.Azure.WebJobs.EventHubs
         {
             JObject options = new JObject
                 {
+                    { nameof(TargetUnprocessedEventThreshold), TargetUnprocessedEventThreshold },
                     { nameof(MaxEventBatchSize), MaxEventBatchSize },
                     { nameof(BatchCheckpointFrequency), BatchCheckpointFrequency },
                     { nameof(TransportType),  TransportType.ToString()},

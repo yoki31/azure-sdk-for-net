@@ -1,137 +1,91 @@
 ﻿using System;
-using System.Threading.Tasks;
+using System.Linq;
 using Azure.Core;
-using Azure.Core.Pipeline;
 using NUnit.Framework;
 
 namespace Azure.ResourceManager.Tests
 {
     [Parallelizable]
-    public class ArmClientOptionsTests : ResourceManagerTestBase
+    public class ArmClientOptionsTests
     {
-        public ArmClientOptionsTests(bool isAsync) : base(isAsync) { }
-
-        [TestCase]
-        public void ValidateClone()
+        [Test]
+        public void DoubleAddOverride()
         {
-            var options1 = new ArmClientOptions();
-            var options2 = options1.Clone();
-
-            Assert.IsFalse(ReferenceEquals(options1, options2));
-            Assert.IsFalse(ReferenceEquals(options1.Diagnostics, options2.Diagnostics));
-            Assert.IsFalse(ReferenceEquals(options1.Retry, options2.Retry));
-            Assert.IsFalse(ReferenceEquals(options1.ApiVersions, options2.ApiVersions));
+            var vmType = new ResourceType("Microsoft.Compute/virtualMachines");
+            var options = new ArmClientOptions();
+            options.SetApiVersion(vmType, "foo");
+            options.SetApiVersion(vmType, "bar");
+            options.ResourceApiVersionOverrides.TryGetValue(vmType, out var actualVersion);
+            Assert.AreEqual("bar", actualVersion);
         }
 
-        [TestCase]
-        public void TestTransportInClone()
+        [Test]
+        public void CaseInsensitiveAddOverride()
         {
-            var x = new ArmClientOptions();
-            x.Transport = new MyTransport();
-            var y = x.Clone();
-            Assert.IsTrue(ReferenceEquals(x.Transport, y.Transport));
-
-            x.Transport = new MyTransport();
-            Assert.IsFalse(ReferenceEquals(y.Transport, x.Transport));
+            var options = new ArmClientOptions();
+            options.SetApiVersion("Microsoft.Compute/virtualMachines", "foo");
+            options.ResourceApiVersionOverrides.TryGetValue("microsoft.compute/virtualmachines", out var actualVersion);
+            Assert.AreEqual("foo", actualVersion);
+            options.SetApiVersion("MICROSOFT.COMPUTE/VIRTUALMACHINES", "bar");
+            options.ResourceApiVersionOverrides.TryGetValue("Microsoft.Compute/virtualMachines", out actualVersion);
+            Assert.AreEqual("bar", actualVersion);
         }
 
-        private class MyTransport : HttpPipelineTransport
+        [Test]
+        public void SetApiVersionsFromProfile()
         {
-            public override Request CreateRequest()
+            var options = new ArmClientOptions();
+            options.SetApiVersionsFromProfile(AzureStackProfile.Profile20200901Hybrid);
+            options.ResourceApiVersionOverrides.TryGetValue("Microsoft.Resources/subscriptions", out var subscriptionApiVersion);
+            Assert.AreEqual("2016-06-01", subscriptionApiVersion);
+            options.ResourceApiVersionOverrides.TryGetValue("Microsoft.Resources/resourceGroups", out var resourceGroupApiVersion);
+            Assert.AreEqual("2019-10-01", resourceGroupApiVersion);
+        }
+
+        [Test]
+        public void SetApiVersionsFromProfileWithApiVersionOverride()
+        {
+            var options = new ArmClientOptions();
+            options.SetApiVersion("Microsoft.Resources/Subscriptions", "2021-01-01");
+            options.SetApiVersionsFromProfile(AzureStackProfile.Profile20200901Hybrid);
+            options.SetApiVersion("microsoft.resources/ResourceGroups", "2021-01-01");
+            options.ResourceApiVersionOverrides.TryGetValue("Microsoft.Resources/subscriptions", out var subscriptionApiVersion);
+            Assert.AreEqual("2016-06-01", subscriptionApiVersion);
+            options.ResourceApiVersionOverrides.TryGetValue("Microsoft.Resources/resourceGroups", out var resourceGroupApiVersion);
+            Assert.AreEqual("2021-01-01", resourceGroupApiVersion);
+        }
+
+        [Test]
+        public void EnsureAllProfilesCanGetManifestName()
+        {
+            var values = Enum.GetValues(typeof(AzureStackProfile)).Cast<AzureStackProfile>();
+            foreach (var value in values)
             {
-                throw new NotImplementedException();
-            }
-
-            public override void Process(HttpMessage message)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override ValueTask ProcessAsync(HttpMessage message)
-            {
-                throw new NotImplementedException();
+                var name = value.GetManifestName();
+                Assert.NotNull(name);
             }
         }
 
         [TestCase]
-        public void VersionIsDefault()
+        public void ValidateInvalidVersionSet()
         {
-            ArmClientOptions options = new ArmClientOptions();
-            Assert.AreEqual(FakeResourceApiVersions.Default, options.FakeRestApiVersions().FakeResourceVersion);
-        }
-
-        [TestCase]
-        public void MultiClientSeparateVersions()
-        {
-            ArmClientOptions options1 = new ArmClientOptions();
-            ArmClientOptions options2 = new ArmClientOptions();
-
-            options2.FakeRestApiVersions().FakeResourceVersion = FakeResourceApiVersions.V2019_12_01;
-            Assert.AreEqual(FakeResourceApiVersions.Default, options1.FakeRestApiVersions().FakeResourceVersion);
-            Assert.AreEqual(FakeResourceApiVersions.V2019_12_01, options2.FakeRestApiVersions().FakeResourceVersion);
+            var options = new ArmClientOptions();
+            Assert.Throws<ArgumentException>(() => { options.SetApiVersion(new ResourceType("Microsoft.Compute/virtualMachines"), ""); });
+            Assert.Throws<ArgumentNullException>(() => { options.SetApiVersion(new ResourceType("Microsoft.Compute/virtualMachines"), null); });
         }
 
         [TestCase]
         [Ignore("Waiting for ADO 5402")]
         public void VersionExist()
         {
-            ArmClientOptions options = new ArmClientOptions();
-            options.FakeRestApiVersions().FakeResourceVersion = FakeResourceApiVersions.V2019_12_01;
-            string result = options.ApiVersions.TryGetApiVersion(options.FakeRestApiVersions().FakeResourceVersion.ResourceType);
-            Assert.NotNull(result);
+            //verify default version from enum is found during api call
         }
 
         [TestCase]
         [Ignore("Waiting for ADO 5402")]
         public void VersionLoadedChanges()
         {
-            ArmClientOptions options = new ArmClientOptions();
-            options.FakeRestApiVersions().FakeResourceVersion = FakeResourceApiVersions.V2019_12_01;
-            string result = options.ApiVersions.TryGetApiVersion(options.FakeRestApiVersions().FakeResourceVersion.ResourceType);
-            Assert.True(result.Equals(FakeResourceApiVersions.V2019_12_01));
-
-            options.FakeRestApiVersions().FakeResourceVersion = FakeResourceApiVersions.Default;
-            result = options.ApiVersions.TryGetApiVersion(options.FakeRestApiVersions().FakeResourceVersion.ResourceType.ToString());
-            Assert.True(result.Equals(FakeResourceApiVersions.Default));
-        }
-
-        [TestCase]
-        [Ignore("Waiting for ADO 5402")]
-        public void VersionsLoadedChangeSet()
-        {
-            ArmClientOptions options = new ArmClientOptions();
-            options.ApiVersions.SetApiVersion(options.FakeRestApiVersions().FakeResourceVersion.ResourceType.ToString(), "2021-01-01-beta");
-            string result = options.ApiVersions.TryGetApiVersion(options.FakeRestApiVersions().FakeResourceVersion.ResourceType.ToString());
-            Assert.True(result.Equals("2021-01-01-beta"));
-
-            options.FakeRestApiVersions().FakeResourceVersion = FakeResourceApiVersions.V2019_12_01;
-            result = options.ApiVersions.TryGetApiVersion(options.FakeRestApiVersions().FakeResourceVersion.ResourceType.ToString());
-            Assert.True(result.Equals(FakeResourceApiVersions.V2019_12_01));
-        }
-
-        [TestCase]
-        public void VersionNonLoadedChanges()
-        {
-            var apiVersions = "2019-10-01";
-            var providerName = "Microsoft.Logic/LogicApps";
-            ArmClientOptions options = new ArmClientOptions();
-            options.ApiVersions.SetApiVersion(providerName, apiVersions);
-            string result = options.ApiVersions.TryGetApiVersion(providerName);
-            Assert.True(result.Equals(apiVersions));
-
-            apiVersions = "2021-02-01";
-            options.ApiVersions.SetApiVersion(providerName, apiVersions);
-            result = options.ApiVersions.TryGetApiVersion(providerName);
-            Assert.True(result.Equals(apiVersions));
-        }
-
-        [TestCase]
-        public void TestKeyDoesNotExist()
-        {
-            var providerName = "Microsoft.Logic/LogicApps";
-            ArmClientOptions options = new ArmClientOptions();
-            string result = options.ApiVersions.TryGetApiVersion(providerName);
-            Assert.Null(result);
+            //verify override is taken instead of default enum in api call
         }
     }
 }

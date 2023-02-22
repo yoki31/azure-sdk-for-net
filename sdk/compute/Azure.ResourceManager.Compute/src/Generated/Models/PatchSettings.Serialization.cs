@@ -17,40 +17,46 @@ namespace Azure.ResourceManager.Compute.Models
             writer.WriteStartObject();
             if (Optional.IsDefined(PatchMode))
             {
-                writer.WritePropertyName("patchMode");
+                writer.WritePropertyName("patchMode"u8);
                 writer.WriteStringValue(PatchMode.Value.ToString());
             }
             if (Optional.IsDefined(EnableHotpatching))
             {
-                writer.WritePropertyName("enableHotpatching");
+                writer.WritePropertyName("enableHotpatching"u8);
                 writer.WriteBooleanValue(EnableHotpatching.Value);
             }
             if (Optional.IsDefined(AssessmentMode))
             {
-                writer.WritePropertyName("assessmentMode");
+                writer.WritePropertyName("assessmentMode"u8);
                 writer.WriteStringValue(AssessmentMode.Value.ToString());
+            }
+            if (Optional.IsDefined(AutomaticByPlatformSettings))
+            {
+                writer.WritePropertyName("automaticByPlatformSettings"u8);
+                writer.WriteObjectValue(AutomaticByPlatformSettings);
             }
             writer.WriteEndObject();
         }
 
         internal static PatchSettings DeserializePatchSettings(JsonElement element)
         {
-            Optional<WindowsVMGuestPatchMode> patchMode = default;
+            Optional<WindowsVmGuestPatchMode> patchMode = default;
             Optional<bool> enableHotpatching = default;
             Optional<WindowsPatchAssessmentMode> assessmentMode = default;
+            Optional<WindowsVmGuestPatchAutomaticByPlatformSettings> automaticByPlatformSettings = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("patchMode"))
+                if (property.NameEquals("patchMode"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    patchMode = new WindowsVMGuestPatchMode(property.Value.GetString());
+                    patchMode = new WindowsVmGuestPatchMode(property.Value.GetString());
                     continue;
                 }
-                if (property.NameEquals("enableHotpatching"))
+                if (property.NameEquals("enableHotpatching"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -60,7 +66,7 @@ namespace Azure.ResourceManager.Compute.Models
                     enableHotpatching = property.Value.GetBoolean();
                     continue;
                 }
-                if (property.NameEquals("assessmentMode"))
+                if (property.NameEquals("assessmentMode"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -70,8 +76,18 @@ namespace Azure.ResourceManager.Compute.Models
                     assessmentMode = new WindowsPatchAssessmentMode(property.Value.GetString());
                     continue;
                 }
+                if (property.NameEquals("automaticByPlatformSettings"u8))
+                {
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        property.ThrowNonNullablePropertyIsNull();
+                        continue;
+                    }
+                    automaticByPlatformSettings = WindowsVmGuestPatchAutomaticByPlatformSettings.DeserializeWindowsVmGuestPatchAutomaticByPlatformSettings(property.Value);
+                    continue;
+                }
             }
-            return new PatchSettings(Optional.ToNullable(patchMode), Optional.ToNullable(enableHotpatching), Optional.ToNullable(assessmentMode));
+            return new PatchSettings(Optional.ToNullable(patchMode), Optional.ToNullable(enableHotpatching), Optional.ToNullable(assessmentMode), automaticByPlatformSettings.Value);
         }
     }
 }

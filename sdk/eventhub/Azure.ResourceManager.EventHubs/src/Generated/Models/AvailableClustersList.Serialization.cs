@@ -11,14 +11,14 @@ using Azure.Core;
 
 namespace Azure.ResourceManager.EventHubs.Models
 {
-    public partial class AvailableClustersList
+    internal partial class AvailableClustersList
     {
         internal static AvailableClustersList DeserializeAvailableClustersList(JsonElement element)
         {
             Optional<IReadOnlyList<AvailableCluster>> value = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("value"))
+                if (property.NameEquals("value"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {

@@ -11,14 +11,14 @@ using Azure.Core;
 
 namespace Azure.ResourceManager.Compute.Models
 {
-    public partial class SshConfiguration : IUtf8JsonSerializable
+    internal partial class SshConfiguration : IUtf8JsonSerializable
     {
         void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
             if (Optional.IsCollectionDefined(PublicKeys))
             {
-                writer.WritePropertyName("publicKeys");
+                writer.WritePropertyName("publicKeys"u8);
                 writer.WriteStartArray();
                 foreach (var item in PublicKeys)
                 {
@@ -31,20 +31,20 @@ namespace Azure.ResourceManager.Compute.Models
 
         internal static SshConfiguration DeserializeSshConfiguration(JsonElement element)
         {
-            Optional<IList<SshPublicKeyInfo>> publicKeys = default;
+            Optional<IList<SshPublicKeyConfiguration>> publicKeys = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("publicKeys"))
+                if (property.NameEquals("publicKeys"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
                         property.ThrowNonNullablePropertyIsNull();
                         continue;
                     }
-                    List<SshPublicKeyInfo> array = new List<SshPublicKeyInfo>();
+                    List<SshPublicKeyConfiguration> array = new List<SshPublicKeyConfiguration>();
                     foreach (var item in property.Value.EnumerateArray())
                     {
-                        array.Add(SshPublicKeyInfo.DeserializeSshPublicKeyInfo(item));
+                        array.Add(SshPublicKeyConfiguration.DeserializeSshPublicKeyConfiguration(item));
                     }
                     publicKeys = array;
                     continue;

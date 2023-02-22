@@ -1,7 +1,7 @@
 # Migration guide from Microsoft.Azure.Cosmos.Table to Azure.Data.Tables
 
 This guide is intended to assist in the migration to the `Azure.Data.Tables` package from the legacy `Microsoft.Azure.CosmosDB.Table` package focusing on
-side-by-side comparisons for similar operations between the to versions.
+side-by-side comparisons for similar operations between the two versions.
 
 Familiarity with the `Microsoft.Azure.CosmosDB.Table` package is assumed. If you are new to the Azure Tables client library for .NET, please refer to the
 [README](https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/tables/Azure.Data.Tables/README.md) and
@@ -38,7 +38,7 @@ and namespaces that begin with `Microsoft.Azure.CosmosDB` or `Microsoft.Azure.St
 
 ### Constructing the clients
 
-Previously in `Microsoft.Azure.Comsmos.Table`, you would create a `CloudStorageAccount` which can be used to get an instance of the `CloudTableClient` in order to
+Previously in `Microsoft.Azure.Cosmos.Table`, you would create a `CloudStorageAccount` which can be used to get an instance of the `CloudTableClient` in order to
 perform service level operations.
 
 ```C#
@@ -78,7 +78,6 @@ any one table, it is ideal for scenarios where you need to create, delete, or li
 
 ```C# Snippet:TablesSample1CreateTable
 // Create a new table. The TableItem class stores properties of the created table.
-string tableName = "OfficeSupplies1p1";
 TableItem table = serviceClient.CreateTableIfNotExists(tableName);
 Console.WriteLine($"The created table's name is {table.Name}.");
 ```
@@ -96,7 +95,7 @@ tableClient.CreateIfNotExists();
 
 Let's define an office supply entity so that we can add it to the table. To do so, we'll first need to define our custom entity types.
 
-Previously in `Microsoft.Azure.Comsmos.Table`, our entity would inherit from the `TableEntity` base class and look like this:
+Previously in `Microsoft.Azure.Cosmos.Table`, our entity would inherit from the `TableEntity` base class and look like this:
 
 ```c#
 public class OfficeSupplyOld : Microsoft.Azure.Cosmos.Table.TableEntity
@@ -175,7 +174,7 @@ or not it already exists.
 
 ```C# Snippet:TablesMigrationUpsertEntity
 // Upsert the newly created entity.
-tableClient.UpsertEntity(entity);
+tableClient.UpsertEntity(tableEntity);
 ```
 
 ### Fetching a single entity from the table

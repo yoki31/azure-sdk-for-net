@@ -35,9 +35,6 @@ namespace Microsoft.Azure.Management.DataFactory.Models
         /// <summary>
         /// Initializes a new instance of the AzureBlobFSLinkedService class.
         /// </summary>
-        /// <param name="url">Endpoint for the Azure Data Lake Storage Gen2
-        /// service. Type: string (or Expression with resultType
-        /// string).</param>
         /// <param name="additionalProperties">Unmatched properties from the
         /// message are deserialized this collection</param>
         /// <param name="connectVia">The integration runtime reference.</param>
@@ -45,6 +42,9 @@ namespace Microsoft.Azure.Management.DataFactory.Models
         /// <param name="parameters">Parameters for linked service.</param>
         /// <param name="annotations">List of tags that can be used for
         /// describing the linked service.</param>
+        /// <param name="url">Endpoint for the Azure Data Lake Storage Gen2
+        /// service. Type: string (or Expression with resultType
+        /// string).</param>
         /// <param name="accountKey">Account key for the Azure Data Lake
         /// Storage Gen2 service. Type: string (or Expression with resultType
         /// string).</param>
@@ -68,7 +68,24 @@ namespace Microsoft.Azure.Management.DataFactory.Models
         /// resultType string).</param>
         /// <param name="credential">The credential reference containing
         /// authentication information.</param>
-        public AzureBlobFSLinkedService(object url, IDictionary<string, object> additionalProperties = default(IDictionary<string, object>), IntegrationRuntimeReference connectVia = default(IntegrationRuntimeReference), string description = default(string), IDictionary<string, ParameterSpecification> parameters = default(IDictionary<string, ParameterSpecification>), IList<object> annotations = default(IList<object>), object accountKey = default(object), object servicePrincipalId = default(object), SecretBase servicePrincipalKey = default(SecretBase), object tenant = default(object), object azureCloudType = default(object), object encryptedCredential = default(object), CredentialReference credential = default(CredentialReference))
+        /// <param name="servicePrincipalCredentialType">The service principal
+        /// credential type to use in Server-To-Server authentication.
+        /// 'ServicePrincipalKey' for key/secret, 'ServicePrincipalCert' for
+        /// certificate. Type: string (or Expression with resultType
+        /// string).</param>
+        /// <param name="servicePrincipalCredential">The credential of the
+        /// service principal object in Azure Active Directory. If
+        /// servicePrincipalCredentialType is 'ServicePrincipalKey',
+        /// servicePrincipalCredential can be SecureString or
+        /// AzureKeyVaultSecretReference. If servicePrincipalCredentialType is
+        /// 'ServicePrincipalCert', servicePrincipalCredential can only be
+        /// AzureKeyVaultSecretReference.</param>
+        /// <param name="sasUri">SAS URI of the Azure Data Lake Storage Gen2
+        /// service. Type: string, SecureString or
+        /// AzureKeyVaultSecretReference.</param>
+        /// <param name="sasToken">The Azure key vault secret reference of
+        /// sasToken in sas uri.</param>
+        public AzureBlobFSLinkedService(IDictionary<string, object> additionalProperties = default(IDictionary<string, object>), IntegrationRuntimeReference connectVia = default(IntegrationRuntimeReference), string description = default(string), IDictionary<string, ParameterSpecification> parameters = default(IDictionary<string, ParameterSpecification>), IList<object> annotations = default(IList<object>), object url = default(object), object accountKey = default(object), object servicePrincipalId = default(object), SecretBase servicePrincipalKey = default(SecretBase), object tenant = default(object), object azureCloudType = default(object), object encryptedCredential = default(object), CredentialReference credential = default(CredentialReference), object servicePrincipalCredentialType = default(object), SecretBase servicePrincipalCredential = default(SecretBase), object sasUri = default(object), SecretBase sasToken = default(SecretBase))
             : base(additionalProperties, connectVia, description, parameters, annotations)
         {
             Url = url;
@@ -79,6 +96,10 @@ namespace Microsoft.Azure.Management.DataFactory.Models
             AzureCloudType = azureCloudType;
             EncryptedCredential = encryptedCredential;
             Credential = credential;
+            ServicePrincipalCredentialType = servicePrincipalCredentialType;
+            ServicePrincipalCredential = servicePrincipalCredential;
+            SasUri = sasUri;
+            SasToken = sasToken;
             CustomInit();
         }
 
@@ -150,6 +171,41 @@ namespace Microsoft.Azure.Management.DataFactory.Models
         public CredentialReference Credential { get; set; }
 
         /// <summary>
+        /// Gets or sets the service principal credential type to use in
+        /// Server-To-Server authentication. 'ServicePrincipalKey' for
+        /// key/secret, 'ServicePrincipalCert' for certificate. Type: string
+        /// (or Expression with resultType string).
+        /// </summary>
+        [JsonProperty(PropertyName = "typeProperties.servicePrincipalCredentialType")]
+        public object ServicePrincipalCredentialType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the credential of the service principal object in
+        /// Azure Active Directory. If servicePrincipalCredentialType is
+        /// 'ServicePrincipalKey', servicePrincipalCredential can be
+        /// SecureString or AzureKeyVaultSecretReference. If
+        /// servicePrincipalCredentialType is 'ServicePrincipalCert',
+        /// servicePrincipalCredential can only be
+        /// AzureKeyVaultSecretReference.
+        /// </summary>
+        [JsonProperty(PropertyName = "typeProperties.servicePrincipalCredential")]
+        public SecretBase ServicePrincipalCredential { get; set; }
+
+        /// <summary>
+        /// Gets or sets SAS URI of the Azure Data Lake Storage Gen2 service.
+        /// Type: string, SecureString or AzureKeyVaultSecretReference.
+        /// </summary>
+        [JsonProperty(PropertyName = "typeProperties.sasUri")]
+        public object SasUri { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Azure key vault secret reference of sasToken in
+        /// sas uri.
+        /// </summary>
+        [JsonProperty(PropertyName = "typeProperties.sasToken")]
+        public SecretBase SasToken { get; set; }
+
+        /// <summary>
         /// Validate the object.
         /// </summary>
         /// <exception cref="ValidationException">
@@ -158,10 +214,6 @@ namespace Microsoft.Azure.Management.DataFactory.Models
         public override void Validate()
         {
             base.Validate();
-            if (Url == null)
-            {
-                throw new ValidationException(ValidationRules.CannotBeNull, "Url");
-            }
             if (Credential != null)
             {
                 Credential.Validate();

@@ -21,7 +21,12 @@ namespace Azure.Core.Tests
                 new MockResponse(1));
 
             var pipeline = new HttpPipeline(mockTransport, new[] {
-                new RetryPolicy(RetryMode.Exponential, TimeSpan.Zero, TimeSpan.Zero, 5)
+                new DefaultRetryPolicy(
+                    new RetryOptions {
+                        Mode = RetryMode.Exponential,
+                        Delay = TimeSpan.Zero,
+                        MaxDelay = TimeSpan.Zero,
+                        MaxRetries = 5})
             }, responseClassifier: new CustomResponseClassifier());
 
             Request request = pipeline.CreateRequest();
@@ -216,7 +221,7 @@ namespace Azure.Core.Tests
         }
 
         [Test]
-        public async Task ThrowsIfUsePipelineConstructor()
+        public void ThrowsIfUsePipelineConstructor()
         {
             HttpPipeline pipeline = new HttpPipeline(new MockTransport());
 
@@ -224,18 +229,14 @@ namespace Azure.Core.Tests
             context.AddPolicy(new AddHeaderPolicy("PerCallHeader", "Value"), HttpPipelinePosition.PerCall);
 
             var message = pipeline.CreateMessage(context);
+            Assert.CatchAsync<InvalidOperationException>(async () => await pipeline.SendAsync(message, context.CancellationToken));
+        }
 
-            bool throws = false;
-            try
-            {
-                await pipeline.SendAsync(message, context.CancellationToken);
-            }
-            catch (InvalidOperationException)
-            {
-                throws = true;
-            }
-
-            Assert.IsTrue(throws);
+        [Test]
+        public void CreateMessage_AllowsNullContext()
+        {
+            var pipeline = new HttpPipeline(new MockTransport());
+            Assert.DoesNotThrow(() => pipeline.CreateMessage(null));
         }
 
         [Test]
@@ -271,7 +272,7 @@ namespace Azure.Core.Tests
         }
 
         [Test]
-        public async Task CustomClassifierSetsResponseIsError()
+        public async Task PipelineClassifierSetsResponseIsError()
         {
             var mockTransport = new MockTransport(
                 new MockResponse(404));
@@ -284,6 +285,58 @@ namespace Azure.Core.Tests
             Response response = await pipeline.SendRequestAsync(request, CancellationToken.None);
 
             Assert.IsFalse(response.IsError);
+        }
+
+        [Test]
+        public async Task RequestContextClassifierSetsResponseIsError()
+        {
+            var mockTransport = new MockTransport(
+                new MockResponse(404));
+
+            var pipeline = new HttpPipeline(mockTransport, default);
+
+            var context = new RequestContext();
+            context.AddClassifier(404, isError: false);
+
+            HttpMessage message = pipeline.CreateMessage(context, ResponseClassifier200204304);
+            Request request = message.Request;
+            request.Method = RequestMethod.Get;
+            request.Uri.Reset(new Uri("https://contoso.a.io"));
+
+            await pipeline.SendAsync(message, CancellationToken.None);
+            Response response = message.Response;
+
+            Assert.IsFalse(response.IsError);
+        }
+
+        [Test]
+        [TestCase(100, true)]
+        [TestCase(200, false)]
+        [TestCase(201, true)]
+        [TestCase(202, true)]
+        [TestCase(204, false)]
+        [TestCase(300, true)]
+        [TestCase(304, false)]
+        [TestCase(400, true)]
+        [TestCase(404, true)]
+        [TestCase(500, true)]
+        [TestCase(504, true)]
+        public async Task RequestContextDefault_IsErrorIsSet(int code, bool isError)
+        {
+            var mockTransport = new MockTransport(
+                new MockResponse(code));
+
+            var pipeline = new HttpPipeline(mockTransport, default);
+
+            HttpMessage message = pipeline.CreateMessage(context: default, ResponseClassifier200204304);
+            Request request = message.Request;
+            request.Method = RequestMethod.Get;
+            request.Uri.Reset(new Uri("https://contoso.a.io"));
+
+            await pipeline.SendAsync(message, CancellationToken.None);
+            Response response = message.Response;
+
+            Assert.AreEqual(isError, response.IsError);
         }
 
         #region Helpers
@@ -325,6 +378,10 @@ namespace Azure.Core.Tests
                 return IsRetriableResponse(message);
             }
         }
+
+        // How classifiers will be generated in DPG.
+        private static ResponseClassifier _responseClassifier200204304;
+        private static ResponseClassifier ResponseClassifier200204304 => _responseClassifier200204304 ??= new StatusCodeClassifier(stackalloc ushort[] { 200, 204, 304 });
         #endregion
 
     }

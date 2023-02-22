@@ -16,16 +16,21 @@ namespace Azure.ResourceManager.Network.Models
     {
         internal static NetworkInterfaceAssociation DeserializeNetworkInterfaceAssociation(JsonElement element)
         {
-            Optional<string> id = default;
+            Optional<ResourceIdentifier> id = default;
             Optional<IReadOnlyList<SecurityRuleData>> securityRules = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("id"))
+                if (property.NameEquals("id"u8))
                 {
-                    id = property.Value.GetString();
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        property.ThrowNonNullablePropertyIsNull();
+                        continue;
+                    }
+                    id = new ResourceIdentifier(property.Value.GetString());
                     continue;
                 }
-                if (property.NameEquals("securityRules"))
+                if (property.NameEquals("securityRules"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {

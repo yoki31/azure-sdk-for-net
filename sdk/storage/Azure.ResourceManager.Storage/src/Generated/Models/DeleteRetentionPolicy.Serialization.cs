@@ -15,15 +15,20 @@ namespace Azure.ResourceManager.Storage.Models
         void IUtf8JsonSerializable.Write(Utf8JsonWriter writer)
         {
             writer.WriteStartObject();
-            if (Optional.IsDefined(Enabled))
+            if (Optional.IsDefined(IsEnabled))
             {
-                writer.WritePropertyName("enabled");
-                writer.WriteBooleanValue(Enabled.Value);
+                writer.WritePropertyName("enabled"u8);
+                writer.WriteBooleanValue(IsEnabled.Value);
             }
             if (Optional.IsDefined(Days))
             {
-                writer.WritePropertyName("days");
+                writer.WritePropertyName("days"u8);
                 writer.WriteNumberValue(Days.Value);
+            }
+            if (Optional.IsDefined(AllowPermanentDelete))
+            {
+                writer.WritePropertyName("allowPermanentDelete"u8);
+                writer.WriteBooleanValue(AllowPermanentDelete.Value);
             }
             writer.WriteEndObject();
         }
@@ -32,9 +37,10 @@ namespace Azure.ResourceManager.Storage.Models
         {
             Optional<bool> enabled = default;
             Optional<int> days = default;
+            Optional<bool> allowPermanentDelete = default;
             foreach (var property in element.EnumerateObject())
             {
-                if (property.NameEquals("enabled"))
+                if (property.NameEquals("enabled"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -44,7 +50,7 @@ namespace Azure.ResourceManager.Storage.Models
                     enabled = property.Value.GetBoolean();
                     continue;
                 }
-                if (property.NameEquals("days"))
+                if (property.NameEquals("days"u8))
                 {
                     if (property.Value.ValueKind == JsonValueKind.Null)
                     {
@@ -54,8 +60,18 @@ namespace Azure.ResourceManager.Storage.Models
                     days = property.Value.GetInt32();
                     continue;
                 }
+                if (property.NameEquals("allowPermanentDelete"u8))
+                {
+                    if (property.Value.ValueKind == JsonValueKind.Null)
+                    {
+                        property.ThrowNonNullablePropertyIsNull();
+                        continue;
+                    }
+                    allowPermanentDelete = property.Value.GetBoolean();
+                    continue;
+                }
             }
-            return new DeleteRetentionPolicy(Optional.ToNullable(enabled), Optional.ToNullable(days));
+            return new DeleteRetentionPolicy(Optional.ToNullable(enabled), Optional.ToNullable(days), Optional.ToNullable(allowPermanentDelete));
         }
     }
 }
